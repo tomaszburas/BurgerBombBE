@@ -1,5 +1,5 @@
 export * from './burger-entity';
 export * from './admin-entity';
-export * from './ingredient-type';
-export * from './order-type';
+export * from './ingredient-entity';
+export * from './order-entity';
 export * from './coupon-entity';
