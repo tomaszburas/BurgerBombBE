@@ -2,6 +2,7 @@ import express, { json } from 'express';
 import 'express-async-errors';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import passport from 'passport';
 
 import { BurgerRouter } from './routes/burger-router';
 import { AdminRouter } from './routes/admin-router';
@@ -11,11 +12,14 @@ import { handleError } from './middlewares/handle-error';
 import { PORT } from './config';
 import { CouponRouter } from './routes/coupon-router';
 
+import './middlewares/passport';
+
 const app = express();
 
 app.use(json());
 app.use(cors());
 app.use(cookieParser());
+app.use(passport.initialize());
 
 app.use('/burger', BurgerRouter);
 app.use('/ingredient', IngredientRouter);
