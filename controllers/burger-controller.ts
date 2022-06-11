@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { BurgerRecord } from '../db/records/burger-record';
 import { checkBurgerData } from '../utils/check-burger-data';
 import { ValidateError } from '../middlewares/handle-error';
+import { Role } from '../types';
 
 export class BurgerController {
     static async getBurgers(req: Request, res: Response) {
@@ -55,6 +56,8 @@ export class BurgerController {
     }
 
     static async deleteBurger(req: Request, res: Response) {
+        if (req.user.role !== Role.SUPER_ADMIN) throw new ValidateError('No permissions');
+
         const id = req.params.id;
         if (!id) throw new ValidateError('Incorrect burger id.');
 

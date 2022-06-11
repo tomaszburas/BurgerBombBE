@@ -1,10 +1,10 @@
-import { IngredientType } from './ingredient-type';
+import { IngredientEntity } from './ingredient-entity';
 import { WithId, Document, ObjectId } from 'mongodb';
 
 export interface BurgerEntity extends WithId<Document> {
     _id: ObjectId;
     name: string;
-    ingredients: IngredientType[];
+    ingredients: IngredientEntity[];
     price: number;
     img: string;
 }

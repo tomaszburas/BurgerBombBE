@@ -1,20 +1,20 @@
-import { IngredientType } from '../../types';
+import { IngredientEntity, NewIngredientEntity } from '../../types';
 import { ObjectId } from 'mongodb';
 import { ingredientsCollection } from '../connect';
 import { ValidateError } from '../../middlewares/handle-error';
 
-export class IngredientRecord implements IngredientType {
-    _id: ObjectId | null;
+export class IngredientRecord implements IngredientEntity {
+    _id: ObjectId;
     name: string;
     price: number;
 
-    constructor(obj: IngredientType) {
+    constructor(obj: NewIngredientEntity) {
         this._id = obj._id;
         this.name = obj.name;
         this.price = obj.price;
     }
 
-    async add(): Promise<IngredientType['_id']> {
+    async add(): Promise<IngredientEntity['_id']> {
         const { insertedId } = await ingredientsCollection.insertOne({
             name: String(this.name),
             price: Number(this.price),
@@ -46,23 +46,23 @@ export class IngredientRecord implements IngredientType {
         );
     }
 
-    static async getOne(id: string): Promise<IngredientType> {
+    static async getOne(id: string): Promise<IngredientEntity> {
         if (!ObjectId.isValid(id)) {
             throw new ValidateError('Ingredient id is invalid.');
         }
 
         const item = (await ingredientsCollection.findOne({
             _id: new ObjectId(id),
-        })) as IngredientType;
+        })) as IngredientEntity;
 
         if (!item) throw new ValidateError('In database dont have ingredient with given id.');
 
         return new IngredientRecord(item);
     }
 
-    static async getAll(): Promise<IngredientType[]> {
+    static async getAll(): Promise<IngredientEntity[]> {
         const result = await ingredientsCollection.find();
-        const resultArray = (await result.toArray()) as IngredientType[];
+        const resultArray = (await result.toArray()) as IngredientEntity[];
 
         if (!resultArray.length) throw new ValidateError('Id database dont have any ingredients.');
 

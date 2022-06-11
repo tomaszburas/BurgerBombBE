@@ -9,6 +9,7 @@ export class CouponRecord implements CouponEntity {
     value: number;
 
     constructor(obj: NewCouponEntity) {
+        this._id = obj._id;
         this.name = obj.name;
         this.value = obj.value;
     }

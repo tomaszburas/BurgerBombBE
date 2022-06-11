@@ -1,16 +1,16 @@
 import { Document, ObjectId, WithId } from 'mongodb';
 import { BurgerEntity } from './burger-entity';
 import { CouponEntity } from './coupon-entity';
-import { IngredientType } from './ingredient-type';
+import { IngredientEntity } from './ingredient-entity';
 
 export enum OrderStatus {
-    NEW,
-    IN_PROGRESS,
-    COMPLETED,
+    NEW = 'new',
+    IN_PROGRESS = 'in progress',
+    COMPLETED = 'completed',
 }
 
-export interface OrderType extends WithId<Document> {
-    _id: ObjectId | null;
+export interface OrderEntity extends WithId<Document> {
+    _id: ObjectId;
     client: {
         fullName: string;
         address: string;
@@ -19,9 +19,13 @@ export interface OrderType extends WithId<Document> {
     };
     order: {
         burger: BurgerEntity['_id'];
-        extraIngredients: IngredientType['_id'][] | [];
+        extraIngredients: IngredientEntity['_id'][] | [];
         price: number;
         coupon: CouponEntity['_id'];
     };
     status: OrderStatus;
+}
+
+export interface NewOrderEntity extends Omit<OrderEntity, '_id'> {
+    _id?: ObjectId;
 }

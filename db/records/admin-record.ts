@@ -2,17 +2,20 @@ import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
 import { ValidateError } from '../../middlewares/handle-error';
 import { validatePassword } from '../../utils/validate-password';
-import { AdminEntity, NewAdminEntity } from '../../types';
+import { AdminEntity, NewAdminEntity, Role } from '../../types';
 import { usersCollection } from '../connect';
 
 export class AdminRecord implements AdminEntity {
     _id: ObjectId;
     name: string;
     password: string;
+    role: Role;
 
     constructor(obj: NewAdminEntity) {
+        this._id = obj._id;
         this.name = obj.name;
         this.password = obj.password;
+        this.role = obj.role;
     }
 
     async create(): Promise<AdminEntity['_id']> {
@@ -26,6 +29,7 @@ export class AdminRecord implements AdminEntity {
         const { insertedId } = await usersCollection.insertOne({
             name: String(this.name),
             password: String(this.password),
+            role: Role.ADMIN,
         });
 
         this._id = insertedId;

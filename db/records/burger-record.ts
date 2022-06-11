@@ -1,4 +1,4 @@
-import { BurgerEntity, IngredientType, NewBurgerEntity } from '../../types';
+import { BurgerEntity, IngredientEntity, NewBurgerEntity } from '../../types';
 import { burgersCollection } from '../connect';
 import { ObjectId } from 'mongodb';
 import { ValidateError } from '../../middlewares/handle-error';
@@ -6,11 +6,12 @@ import { ValidateError } from '../../middlewares/handle-error';
 export class BurgerRecord implements BurgerEntity {
     _id: ObjectId;
     name: string;
-    ingredients: IngredientType[];
+    ingredients: IngredientEntity[];
     price: number;
     img: string;
 
     constructor(obj: NewBurgerEntity) {
+        this._id = obj._id;
         this.name = obj.name;
         this.ingredients = obj.ingredients;
         this.price = obj.price;

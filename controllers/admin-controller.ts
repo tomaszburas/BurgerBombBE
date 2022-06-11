@@ -10,6 +10,8 @@ export class AdminController {
 
         const user = await AdminRecord.login(name, password);
 
+        console.log(user);
+
         const payload = {
             _id: user._id,
             name: user.name,
@@ -36,6 +38,8 @@ export class AdminController {
     static async create(req: Request, res: Response) {
         const { name, password } = req.body;
 
+        // if (req.user.role !== Role.SUPER_ADMIN) throw new ValidateError('No permissions');
+
         const userEntity = await AdminRecord.getByName(name);
         if (userEntity) throw new ValidateError('This username has been taken.')
 
@@ -50,6 +54,8 @@ export class AdminController {
     }
 
     static async delete(req: Request, res: Response) {
+        // if (req.user.role !== Role.SUPER_ADMIN) throw new ValidateError('No permissions');
+
         await AdminRecord.delete(req.body.id);
 
         res.status(200).json({ success: true });
