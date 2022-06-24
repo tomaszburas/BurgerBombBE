@@ -1,4 +1,12 @@
-import { OrderEntity, OrderStatus, BurgerEntity, IngredientEntity, CouponEntity, NewOrderEntity } from '../../types';
+import {
+    OrderEntity,
+    OrderStatus,
+    BurgerEntity,
+    IngredientEntity,
+    CouponEntity,
+    NewOrderEntity,
+    PaymentMethod,
+} from '../../types';
 import { ObjectId } from 'mongodb';
 import { ordersCollection } from '../connect';
 import { ValidateError } from '../../middlewares/handle-error';
@@ -16,6 +24,10 @@ export class OrderRecord implements OrderEntity {
         extraIngredients: IngredientEntity['_id'][] | [];
         price: number;
         coupon: CouponEntity['_id'] | null;
+        payment: {
+            method: PaymentMethod;
+            success: boolean;
+        };
     };
     status: OrderStatus;
 

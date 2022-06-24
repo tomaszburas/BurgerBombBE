@@ -9,6 +9,11 @@ export enum OrderStatus {
     COMPLETED = 'completed',
 }
 
+export enum PaymentMethod {
+    CARD = 'card',
+    CASH = 'cash',
+}
+
 export interface OrderEntity extends WithId<Document> {
     _id: ObjectId;
     client: {
@@ -22,6 +27,10 @@ export interface OrderEntity extends WithId<Document> {
         extraIngredients: IngredientEntity['_id'][] | [];
         price: number;
         coupon: CouponEntity['_id'];
+        payment: {
+            method: PaymentMethod;
+            success: boolean;
+        }
     };
     status: OrderStatus;
 }
