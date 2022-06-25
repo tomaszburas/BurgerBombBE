@@ -7,9 +7,9 @@ export enum Role {
 
 export interface AdminEntity {
     _id: ObjectId;
-    name: string;
+    mail: string;
     password: string;
-    role: Role,
+    role: Role;
 }
 
 export interface NewAdminEntity extends Omit<AdminEntity, '_id' | 'role'> {

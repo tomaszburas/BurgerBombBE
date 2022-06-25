@@ -7,19 +7,19 @@ import { usersCollection } from '../connect';
 
 export class AdminRecord implements AdminEntity {
     _id: ObjectId;
-    name: string;
+    mail: string;
     password: string;
     role: Role;
 
     constructor(obj: NewAdminEntity) {
         this._id = obj._id;
-        this.name = obj.name;
+        this.mail = obj.mail;
         this.password = obj.password;
         this.role = obj.role;
     }
 
     async create(): Promise<AdminEntity['_id']> {
-        if (this.name.length < 3 || this.name.length > 20) throw new ValidateError('Username is to long.');
+        if (this.mail.length < 3 || this.mail.length > 20) throw new ValidateError('Username is to long.');
 
         if (!validatePassword(this.password))
             throw new ValidateError('Password must contain min. 5 characters, one digit and one upper case character');
@@ -27,7 +27,7 @@ export class AdminRecord implements AdminEntity {
         this.password = await bcrypt.hash(this.password, 10);
 
         const { insertedId } = await usersCollection.insertOne({
-            name: String(this.name),
+            mail: String(this.mail),
             password: String(this.password),
             role: Role.ADMIN,
         });
@@ -54,16 +54,16 @@ export class AdminRecord implements AdminEntity {
         return new AdminRecord(user);
     }
 
-    static async getByName(name: AdminEntity['name']): Promise<AdminEntity | null> {
+    static async getByMail(mail: AdminEntity['mail']): Promise<AdminEntity | null> {
         const user = (await usersCollection.findOne({
-            name: String(name),
+            mail: String(mail),
         })) as AdminEntity;
 
         return user ? new AdminRecord(user) : null;
     }
 
-    static async login(name: AdminEntity['name'], password: AdminEntity['password']): Promise<AdminEntity> {
-        const user = (await usersCollection.findOne({ name })) as AdminEntity;
+    static async login(mail: AdminEntity['mail'], password: AdminEntity['password']): Promise<AdminEntity> {
+        const user = (await usersCollection.findOne({ mail })) as AdminEntity;
         if (!user) throw new ValidateError('User not found');
 
         const passwordMatch = await bcrypt.compare(password, user.password);
