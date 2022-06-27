@@ -14,10 +14,16 @@ import { ValidateError } from '../../middlewares/handle-error';
 export class OrderRecord implements OrderEntity {
     _id: ObjectId;
     client: {
-        fullName: string;
-        address: string;
+        firstName: string;
+        lastName: string;
+        address: {
+            street: string;
+            number: string;
+            zipCode: string;
+            city: string;
+        };
         phone: string;
-        mail: string;
+        email: string;
     };
     order: {
         burger: BurgerEntity['_id'];

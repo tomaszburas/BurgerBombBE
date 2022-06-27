@@ -17,10 +17,16 @@ export enum PaymentMethod {
 export interface OrderEntity extends WithId<Document> {
     _id: ObjectId;
     client: {
-        fullName: string;
-        address: string;
+        firstName: string;
+        lastName: string;
+        address: {
+            street: string;
+            number: string;
+            zipCode: string;
+            city: string;
+        };
         phone: string;
-        mail: string;
+        email: string;
     };
     order: {
         burger: BurgerEntity['_id'];
@@ -30,7 +36,7 @@ export interface OrderEntity extends WithId<Document> {
         payment: {
             method: PaymentMethod;
             success: boolean;
-        }
+        };
     };
     status: OrderStatus;
 }
