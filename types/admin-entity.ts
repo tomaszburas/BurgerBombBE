@@ -7,7 +7,7 @@ export enum Role {
 
 export interface AdminEntity {
     _id: ObjectId;
-    mail: string;
+    email: string;
     password: string;
     role: Role;
 }

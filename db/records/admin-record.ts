@@ -7,19 +7,19 @@ import { usersCollection } from '../connect';
 
 export class AdminRecord implements AdminEntity {
     _id: ObjectId;
-    mail: string;
+    email: string;
     password: string;
     role: Role;
 
     constructor(obj: NewAdminEntity) {
         this._id = obj._id;
-        this.mail = obj.mail;
+        this.email = obj.email;
         this.password = obj.password;
         this.role = obj.role;
     }
 
     async create(): Promise<AdminEntity['_id']> {
-        if (this.mail.length < 3 || this.mail.length > 20) throw new ValidateError('Username is to long.');
+        if (this.email.length < 3 || this.email.length > 20) throw new ValidateError('Username is to long.');
 
         if (!validatePassword(this.password))
             throw new ValidateError('Password must contain min. 5 characters, one digit and one upper case character');
@@ -27,7 +27,7 @@ export class AdminRecord implements AdminEntity {
         this.password = await bcrypt.hash(this.password, 10);
 
         const { insertedId } = await usersCollection.insertOne({
-            mail: String(this.mail),
+            mail: String(this.email),
             password: String(this.password),
             role: Role.ADMIN,
         });
@@ -54,7 +54,7 @@ export class AdminRecord implements AdminEntity {
         return new AdminRecord(user);
     }
 
-    static async getByMail(mail: AdminEntity['mail']): Promise<AdminEntity | null> {
+    static async getByMail(mail: AdminEntity['email']): Promise<AdminEntity | null> {
         const user = (await usersCollection.findOne({
             mail: String(mail),
         })) as AdminEntity;
@@ -62,7 +62,7 @@ export class AdminRecord implements AdminEntity {
         return user ? new AdminRecord(user) : null;
     }
 
-    static async login(mail: AdminEntity['mail'], password: AdminEntity['password']): Promise<AdminEntity> {
+    static async login(mail: AdminEntity['email'], password: AdminEntity['password']): Promise<AdminEntity> {
         const user = (await usersCollection.findOne({ mail })) as AdminEntity;
         if (!user) throw new ValidateError('User not found');
 
