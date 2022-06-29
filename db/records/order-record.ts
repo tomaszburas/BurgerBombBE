@@ -32,7 +32,6 @@ export class OrderRecord implements OrderEntity {
         coupon: CouponEntity['_id'] | null;
         payment: {
             method: PaymentMethod;
-            success: boolean;
         };
     };
     status: OrderStatus;

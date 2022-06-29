@@ -35,7 +35,6 @@ export interface OrderEntity extends WithId<Document> {
         coupon: CouponEntity['_id'];
         payment: {
             method: PaymentMethod;
-            success: boolean;
         };
     };
     status: OrderStatus;
