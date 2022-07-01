@@ -3,17 +3,24 @@ import { AdminRecord } from '../db/records/admin-record';
 import { ACCESS_TOKEN } from '../config';
 import jwt from 'jsonwebtoken';
 import { ValidateError } from '../middlewares/handle-error';
-import { validationEmail } from '../utils/validate-email';
 
 export class AdminController {
-    static async login(req: Request, res: Response) {
-        const { mail, password } = req.body;
+    static async auth(req: Request, res: Response) {
+        if (req.user) {
+            res.status(200).json({
+                success: true,
+            });
+        }
+    }
 
-        const user = await AdminRecord.login(mail, password);
+    static async login(req: Request, res: Response) {
+        const { email, password } = req.body;
+
+        const user = await AdminRecord.login(email, password);
 
         const payload = {
             _id: user._id,
-            mail: user.mail,
+            mail: user.email,
         };
 
         const token = jwt.sign(payload, ACCESS_TOKEN, { expiresIn: '1d' });
@@ -35,17 +42,16 @@ export class AdminController {
     }
 
     static async create(req: Request, res: Response) {
-        const { mail, password } = req.body;
+        const { email, password, role } = req.body;
 
         // if (req.user.role !== Role.SUPER_ADMIN) throw new ValidateError('No permissions');
-        if (validationEmail(mail)) throw new ValidateError('Incorrect email.');
-
-        const userEntity = await AdminRecord.getByMail(mail);
-        if (userEntity) throw new ValidateError('This username has been taken.');
+        const userEntity = await AdminRecord.getByEmail(email);
+        if (userEntity) throw new ValidateError('This email has been taken.');
 
         const user = new AdminRecord({
-            mail,
+            email,
             password,
+            role,
         });
 
         await user.create();

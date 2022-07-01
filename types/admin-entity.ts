@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb';
 
 export enum Role {
-    ADMIN,
-    SUPER_ADMIN,
+    ADMIN = 'admin',
+    SUPER_ADMIN = 'super_admin',
 }
 
 export interface AdminEntity {

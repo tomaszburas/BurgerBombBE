@@ -6,5 +6,6 @@ export const AdminRouter = Router();
 
 AdminRouter.post('/login', AdminController.login)
     .get('/logout', authenticateJwt, AdminController.logout)
+    .get('/auth', authenticateJwt, AdminController.auth)
     .post('/', authenticateJwt, AdminController.create)
     .delete('/', authenticateJwt, AdminController.delete);

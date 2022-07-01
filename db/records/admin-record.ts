@@ -4,6 +4,7 @@ import { ValidateError } from '../../middlewares/handle-error';
 import { validatePassword } from '../../utils/validate-password';
 import { AdminEntity, NewAdminEntity, Role } from '../../types';
 import { usersCollection } from '../connect';
+import { validationEmail } from '../../utils/validate-email';
 
 export class AdminRecord implements AdminEntity {
     _id: ObjectId;
@@ -19,17 +20,16 @@ export class AdminRecord implements AdminEntity {
     }
 
     async create(): Promise<AdminEntity['_id']> {
-        if (this.email.length < 3 || this.email.length > 20) throw new ValidateError('Username is to long.');
-
+        if (!validationEmail(this.email)) throw new ValidateError('Incorrect email.');
         if (!validatePassword(this.password))
             throw new ValidateError('Password must contain min. 5 characters, one digit and one upper case character');
 
         this.password = await bcrypt.hash(this.password, 10);
 
         const { insertedId } = await usersCollection.insertOne({
-            mail: String(this.email),
+            email: String(this.email),
             password: String(this.password),
-            role: Role.ADMIN,
+            role: String(this.role),
         });
 
         this._id = insertedId;
@@ -54,16 +54,16 @@ export class AdminRecord implements AdminEntity {
         return new AdminRecord(user);
     }
 
-    static async getByMail(mail: AdminEntity['email']): Promise<AdminEntity | null> {
+    static async getByEmail(email: AdminEntity['email']): Promise<AdminEntity | null> {
         const user = (await usersCollection.findOne({
-            mail: String(mail),
+            email: String(email),
         })) as AdminEntity;
 
         return user ? new AdminRecord(user) : null;
     }
 
-    static async login(mail: AdminEntity['email'], password: AdminEntity['password']): Promise<AdminEntity> {
-        const user = (await usersCollection.findOne({ mail })) as AdminEntity;
+    static async login(email: AdminEntity['email'], password: AdminEntity['password']): Promise<AdminEntity> {
+        const user = await this.getByEmail(email);
         if (!user) throw new ValidateError('User not found');
 
         const passwordMatch = await bcrypt.compare(password, user.password);
