@@ -17,15 +17,20 @@ import './middlewares/passport';
 const app = express();
 
 app.use(json());
-app.use(cors());
+app.use(
+    cors({
+        origin: 'http://localhost:3000',
+        credentials: true,
+    })
+);
 app.use(cookieParser());
 app.use(passport.initialize());
 
-app.use('/burger', BurgerRouter);
-app.use('/ingredient', IngredientRouter);
-app.use('/admin', AdminRouter);
-app.use('/order', OrderRouter);
-app.use('/coupon', CouponRouter);
+app.use('/api/burger', BurgerRouter);
+app.use('/api/ingredient', IngredientRouter);
+app.use('/api/admin', AdminRouter);
+app.use('/api/order', OrderRouter);
+app.use('/api/coupon', CouponRouter);
 
 app.use(handleError);
 
