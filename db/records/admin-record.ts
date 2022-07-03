@@ -102,7 +102,7 @@ export class AdminRecord implements AdminEntity {
     }
 
     static async getAll(): Promise<AdminEntityResponse[]> {
-        const cursor = await usersCollection.find().sort({ role: -1 });
+        const cursor = await usersCollection.find().sort({ role: -1, email: 1 });
         const users = await cursor.toArray();
 
         return users.length === 0
