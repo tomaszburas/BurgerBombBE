@@ -20,7 +20,7 @@ export class IngredientRecord implements IngredientEntity {
         if (!this.name) throw new ValidateError('The name of the ingredient is missing');
 
         const { insertedId } = await ingredientsCollection.insertOne({
-            name: String(this.name),
+            name: String(this.name.toLowerCase()),
             price: Number(this.price),
             quantity: Number(this.quantity),
         });
@@ -39,7 +39,7 @@ export class IngredientRecord implements IngredientEntity {
         await ingredientsCollection.replaceOne(
             { _id: new ObjectId(this.id) },
             {
-                name: name ? String(name) : this.name,
+                name: name ? String(name.toLowerCase()) : this.name,
                 price: price ? Number(price) : this.price,
                 quantity: quantity ? Number(quantity) : this.quantity,
             }
@@ -61,7 +61,7 @@ export class IngredientRecord implements IngredientEntity {
     }
 
     static async getAll(): Promise<IngredientEntity[]> {
-        const cursor = await ingredientsCollection.find();
+        const cursor = await ingredientsCollection.find().sort({ name: 1 });
         const ingredients = await cursor.toArray();
 
         return ingredients.length === 0
