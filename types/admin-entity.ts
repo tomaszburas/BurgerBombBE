@@ -1,18 +1,24 @@
 import { ObjectId } from 'mongodb';
 
 export enum Role {
-    ADMIN = 'admin',
-    SUPER_ADMIN = 'super_admin',
+    ADMIN = 'Admin',
+    SUPER_ADMIN = 'Super Admin',
 }
 
 export interface AdminEntity {
-    _id: ObjectId;
+    id: string;
     email: string;
     password: string;
-    role: Role;
+    role: string;
 }
 
-export interface NewAdminEntity extends Omit<AdminEntity, '_id' | 'role'> {
-    _id?: ObjectId;
-    role?: Role;
+export interface NewAdminEntity extends Omit<AdminEntity, 'id'> {
+    id?: string;
 }
+
+export interface AdminEntityDB extends Omit<AdminEntity, 'id'> {
+    _id: ObjectId;
+    id?: string;
+}
+
+export interface AdminEntityResponse extends Omit<AdminEntity, 'password'> {}

@@ -14,18 +14,24 @@ export class OrderController {
         const value = await orderValue(order);
 
         const newOrder = new OrderRecord({
-            _id: null,
             client: {
-                fullName: client.fullName,
-                address: client.address,
+                firstName: client.firstName,
+                lastName: client.lastName,
+                address: {
+                    street: client.address.street,
+                    number: client.address.number,
+                    zipCode: client.address.zipCode,
+                    city: client.address.city,
+                },
                 phone: client.phone,
-                mail: client.mail,
+                email: client.email,
             },
             order: {
-                burger: new ObjectId(order.burger),
-                extraIngredients: checkIngredients(order.extraIngredients),
+                burger: order.burger,
+                extraIngredients: order.extraIngredients,
                 price: value,
-                coupon: order.coupon ? new ObjectId(order.coupon) : null,
+                payment: order.payment,
+                coupon: order.coupon ? order.coupon : null,
             },
             status: OrderStatus.NEW,
         });

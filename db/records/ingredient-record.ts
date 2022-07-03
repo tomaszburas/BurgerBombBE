@@ -1,47 +1,47 @@
-import { IngredientEntity, NewIngredientEntity } from '../../types';
+import { IngredientEntity, IngredientEntityDB, NewIngredientEntity } from '../../types';
 import { ObjectId } from 'mongodb';
 import { ingredientsCollection } from '../connect';
 import { ValidateError } from '../../middlewares/handle-error';
 
 export class IngredientRecord implements IngredientEntity {
-    _id: ObjectId;
+    id: string;
     name: string;
     price: number;
+    quantity: number;
 
     constructor(obj: NewIngredientEntity) {
-        this._id = obj._id;
+        this.id = obj.id;
         this.name = obj.name;
-        this.price = obj.price;
+        this.price = obj.price ? Number(obj.price) : 0;
+        this.quantity = obj.quantity ? Number(obj.quantity) : 0;
     }
 
-    async add(): Promise<IngredientEntity['_id']> {
+    async add(): Promise<string> {
+        if (!this.name) throw new ValidateError('The name of the ingredient is missing');
+
         const { insertedId } = await ingredientsCollection.insertOne({
             name: String(this.name),
             price: Number(this.price),
+            quantity: Number(this.quantity),
         });
 
-        this._id = insertedId;
-        return insertedId;
+        this.id = insertedId.toString();
+        return this.id;
     }
 
-    async delete(): Promise<void> {
-        await ingredientsCollection.deleteOne({ _id: this._id });
+    static async delete(id: string): Promise<void> {
+        if (!ObjectId.isValid(id)) throw new ValidateError('User id is invalid.');
+
+        await ingredientsCollection.deleteOne({ _id: new ObjectId(id) });
     }
 
-    async update(): Promise<void> {
-        if (typeof this.name !== 'string') {
-            throw new ValidateError('Typeof name must be a string');
-        }
-
-        if (typeof this.price !== 'number') {
-            throw new ValidateError('Typeof name must be a string');
-        }
-
+    async update({ name, price, quantity }: NewIngredientEntity): Promise<void> {
         await ingredientsCollection.replaceOne(
-            { _id: this._id },
+            { _id: new ObjectId(this.id) },
             {
-                name: String(this.name),
-                price: Number(this.price),
+                name: name ? String(name) : this.name,
+                price: price ? Number(price) : this.price,
+                quantity: quantity ? Number(quantity) : this.quantity,
             }
         );
     }
@@ -53,7 +53,7 @@ export class IngredientRecord implements IngredientEntity {
 
         const item = (await ingredientsCollection.findOne({
             _id: new ObjectId(id),
-        })) as IngredientEntity;
+        })) as IngredientEntityDB;
 
         if (!item) throw new ValidateError('In database dont have ingredient with given id.');
 
@@ -61,11 +61,16 @@ export class IngredientRecord implements IngredientEntity {
     }
 
     static async getAll(): Promise<IngredientEntity[]> {
-        const result = await ingredientsCollection.find();
-        const resultArray = (await result.toArray()) as IngredientEntity[];
+        const cursor = await ingredientsCollection.find();
+        const ingredients = await cursor.toArray();
 
-        if (!resultArray.length) throw new ValidateError('Id database dont have any ingredients.');
-
-        return resultArray;
+        return ingredients.length === 0
+            ? []
+            : ingredients.map((ingredient: IngredientEntityDB) => ({
+                  id: ingredient._id.toString(),
+                  name: ingredient.name,
+                  price: ingredient.price,
+                  quantity: ingredient.quantity,
+              }));
     }
 }

@@ -1,11 +1,19 @@
-import { Document, ObjectId, WithId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 
-export interface IngredientEntity extends WithId<Document> {
-    _id: ObjectId;
+export interface IngredientEntity {
+    id: string;
     name: string;
     price: number;
+    quantity: number;
 }
 
-export interface NewIngredientEntity extends Omit<IngredientEntity, '_id'> {
-    _id?: ObjectId;
+export interface NewIngredientEntity extends Omit<IngredientEntity, 'id'> {
+    id?: string;
 }
+
+export interface IngredientEntityDB extends Omit<IngredientEntity, 'id'> {
+    _id: ObjectId;
+    id?: string;
+}
+
+export interface IngredientEntityResponse extends IngredientEntity {}

@@ -7,5 +7,7 @@ export const AdminRouter = Router();
 AdminRouter.post('/login', AdminController.login)
     .get('/logout', authenticateJwt, AdminController.logout)
     .get('/auth', authenticateJwt, AdminController.auth)
+    .get('/', authenticateJwt, AdminController.getAll)
     .post('/', authenticateJwt, AdminController.create)
-    .delete('/', authenticateJwt, AdminController.delete);
+    .put('/:id', authenticateJwt, AdminController.update)
+    .delete('/:id', authenticateJwt, AdminController.delete);

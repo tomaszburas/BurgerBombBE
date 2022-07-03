@@ -1,7 +1,4 @@
 import { Document, ObjectId, WithId } from 'mongodb';
-import { BurgerEntity } from './burger-entity';
-import { CouponEntity } from './coupon-entity';
-import { IngredientEntity } from './ingredient-entity';
 
 export enum OrderStatus {
     NEW = 'new',
@@ -14,8 +11,8 @@ export enum PaymentMethod {
     CASH = 'cash',
 }
 
-export interface OrderEntity extends WithId<Document> {
-    _id: ObjectId;
+export interface OrderEntity {
+    id: string;
     client: {
         firstName: string;
         lastName: string;
@@ -29,10 +26,10 @@ export interface OrderEntity extends WithId<Document> {
         email: string;
     };
     order: {
-        burger: BurgerEntity['_id'];
-        extraIngredients: IngredientEntity['_id'][] | [];
+        burger: string;
+        extraIngredients: string[];
         price: number;
-        coupon: CouponEntity['_id'];
+        coupon: string;
         payment: {
             method: PaymentMethod;
         };
@@ -40,6 +37,6 @@ export interface OrderEntity extends WithId<Document> {
     status: OrderStatus;
 }
 
-export interface NewOrderEntity extends Omit<OrderEntity, '_id'> {
-    _id?: ObjectId;
+export interface NewOrderEntity extends Omit<OrderEntity, 'id'> {
+    id?: string;
 }

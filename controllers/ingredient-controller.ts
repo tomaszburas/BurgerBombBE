@@ -1,10 +1,9 @@
 import { Request, Response } from 'express';
 import { ValidateError } from '../middlewares/handle-error';
 import { IngredientRecord } from '../db/records/ingredient-record';
-import { BurgerRecord } from '../db/records/burger-record';
 
 export class IngredientController {
-    static async getIngredients(req: Request, res: Response) {
+    static async getAll(req: Request, res: Response) {
         const ingredients = await IngredientRecord.getAll();
 
         res.status(200).json({
@@ -13,9 +12,9 @@ export class IngredientController {
         });
     }
 
-    static async getIngredient(req: Request, res: Response) {
+    static async getOne(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect ingredient id.');
+        if (!id) throw new ValidateError('Incorrect ingredient id');
 
         const ingredient = await IngredientRecord.getOne(id);
 
@@ -25,36 +24,52 @@ export class IngredientController {
         });
     }
 
-    static async addIngredient(req: Request, res: Response) {
+    static async add(req: Request, res: Response) {
         const ingredient = new IngredientRecord(req.body);
         await ingredient.add();
 
         res.status(201).json({
             success: true,
+            message: 'Ingredient added successfully',
         });
     }
 
-    static async updateIngredient(req: Request, res: Response) {
+    static async update(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect ingredient id.');
+        if (!id) throw new ValidateError('Incorrect ingredient id');
 
         const ingredient = await IngredientRecord.getOne(id);
 
-        if (req.body.name) ingredient.name = req.body.name;
-        if (req.body.price) ingredient.price = Number(req.body.price);
+        const newIngredient = {
+            name: req.body.name ? req.body.name : '',
+            price: req.body.price ? Number(req.body.price) : 0,
+            quantity: req.body.quantity ? Number(req.body.quantity) : 0,
+        };
 
-        await ingredient.update();
-    }
+        const newIngredientEntity = new IngredientRecord({
+            id,
+            name: ingredient.name,
+            price: ingredient.price,
+            quantity: ingredient.quantity,
+        });
 
-    static async deleteIngredient(req: Request, res: Response) {
-        const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect ingredient id.');
-
-        const burger = await BurgerRecord.getOne(id);
-        await burger.delete();
+        await newIngredientEntity.update(newIngredient);
 
         res.status(200).json({
             success: true,
+            message: 'Ingredient updated successfully',
+        });
+    }
+
+    static async delete(req: Request, res: Response) {
+        const id = req.params.id;
+        if (!id) throw new ValidateError('Incorrect ingredient id');
+
+        await IngredientRecord.delete(id);
+
+        res.status(200).json({
+            success: true,
+            message: 'Ingredient removed',
         });
     }
 }

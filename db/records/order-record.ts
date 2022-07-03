@@ -1,18 +1,10 @@
-import {
-    OrderEntity,
-    OrderStatus,
-    BurgerEntity,
-    IngredientEntity,
-    CouponEntity,
-    NewOrderEntity,
-    PaymentMethod,
-} from '../../types';
+import { OrderEntity, OrderStatus, NewOrderEntity, PaymentMethod } from '../../types';
 import { ObjectId } from 'mongodb';
 import { ordersCollection } from '../connect';
 import { ValidateError } from '../../middlewares/handle-error';
 
 export class OrderRecord implements OrderEntity {
-    _id: ObjectId;
+    id: string;
     client: {
         firstName: string;
         lastName: string;
@@ -26,10 +18,10 @@ export class OrderRecord implements OrderEntity {
         email: string;
     };
     order: {
-        burger: BurgerEntity['_id'];
-        extraIngredients: IngredientEntity['_id'][] | [];
+        burger: string;
+        extraIngredients: string[];
         price: number;
-        coupon: CouponEntity['_id'] | null;
+        coupon: string | null;
         payment: {
             method: PaymentMethod;
         };
@@ -37,13 +29,13 @@ export class OrderRecord implements OrderEntity {
     status: OrderStatus;
 
     constructor(obj: NewOrderEntity) {
-        this._id = obj._id;
+        this.id = obj.id;
         this.client = obj.client;
         this.order = obj.order;
         this.status = obj.status || OrderStatus.NEW;
     }
 
-    async add(): Promise<null | OrderEntity['_id']> {
+    async add(): Promise<null | string> {
         const { insertedId } = await ordersCollection.insertOne({
             client: this.client,
             order: this.order,
@@ -51,8 +43,8 @@ export class OrderRecord implements OrderEntity {
         });
 
         if (!insertedId) return null;
-        this._id = insertedId;
-        return insertedId;
+        this.id = insertedId.toString();
+        return this.id;
     }
 
     static async updateStatus(id: string, status: OrderEntity['status']): Promise<void> {
@@ -80,7 +72,7 @@ export class OrderRecord implements OrderEntity {
 
         const item = (await ordersCollection.findOne({
             _id: new ObjectId(id),
-        })) as OrderEntity;
+        })) as any;
 
         if (!item) throw new ValidateError('In database dont have ingredient with given id.');
 
@@ -89,7 +81,7 @@ export class OrderRecord implements OrderEntity {
 
     static async getAll(): Promise<OrderEntity[]> {
         const result = await ordersCollection.find();
-        const resultArray = (await result.toArray()) as OrderEntity[];
+        const resultArray = (await result.toArray()) as any[];
 
         if (!resultArray.length) throw new ValidateError('Id database dont have any order.');
 
