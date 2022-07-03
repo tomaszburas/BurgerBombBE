@@ -3,9 +3,7 @@ import { AdminRecord } from '../db/records/admin-record';
 import { ACCESS_TOKEN } from '../config';
 import jwt from 'jsonwebtoken';
 import { ValidateError } from '../middlewares/handle-error';
-import { AdminEntityDB, NewAdminEntity, Role } from '../types';
-import { BurgerRecord } from '../db/records/burger-record';
-import usersReceiver from '../../client/src/eventrix/usersReceiver';
+import { Role } from '../types';
 
 export class AdminController {
     static async auth(req: Request, res: Response) {

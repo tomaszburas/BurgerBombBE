@@ -30,7 +30,7 @@ export class IngredientRecord implements IngredientEntity {
     }
 
     static async delete(id: string): Promise<void> {
-        if (!ObjectId.isValid(id)) throw new ValidateError('User id is invalid.');
+        if (!ObjectId.isValid(id)) throw new ValidateError('User id is invalid');
 
         await ingredientsCollection.deleteOne({ _id: new ObjectId(id) });
     }
@@ -48,14 +48,14 @@ export class IngredientRecord implements IngredientEntity {
 
     static async getOne(id: string): Promise<IngredientEntity> {
         if (!ObjectId.isValid(id)) {
-            throw new ValidateError('Ingredient id is invalid.');
+            throw new ValidateError('Ingredient id is invalid');
         }
 
         const item = (await ingredientsCollection.findOne({
             _id: new ObjectId(id),
         })) as IngredientEntityDB;
 
-        if (!item) throw new ValidateError('In database dont have ingredient with given id.');
+        if (!item) throw new ValidateError('In database dont have ingredient with given id');
 
         return new IngredientRecord(item);
     }
