@@ -5,7 +5,7 @@ import { ValidateError } from '../middlewares/handle-error';
 import { Role } from '../types';
 
 export class BurgerController {
-    static async getBurgers(req: Request, res: Response) {
+    static async getAll(req: Request, res: Response) {
         const burgers = await BurgerRecord.getAll();
 
         res.status(200).json({
@@ -14,7 +14,7 @@ export class BurgerController {
         });
     }
 
-    static async getBurger(req: Request, res: Response) {
+    static async getOne(req: Request, res: Response) {
         const id = req.params.id;
         if (!id) throw new ValidateError('Incorrect burger id.');
 
@@ -26,7 +26,7 @@ export class BurgerController {
         });
     }
 
-    static async addBurger(req: Request, res: Response) {
+    static async add(req: Request, res: Response) {
         checkBurgerData(req.body);
 
         const createBurger = new BurgerRecord(req.body);
@@ -37,7 +37,7 @@ export class BurgerController {
         });
     }
 
-    static async updateBurger(req: Request, res: Response) {
+    static async update(req: Request, res: Response) {
         const id = req.params.id;
         if (!id) throw new ValidateError('Incorrect burger id.');
 
@@ -55,7 +55,7 @@ export class BurgerController {
         });
     }
 
-    static async deleteBurger(req: Request, res: Response) {
+    static async delete(req: Request, res: Response) {
         if (req.user.role !== Role.SUPER_ADMIN) throw new ValidateError('No permissions');
 
         const id = req.params.id;

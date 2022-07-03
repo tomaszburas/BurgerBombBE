@@ -4,8 +4,8 @@ import { authenticateJwt } from '../middlewares/authenticate-jwt';
 
 export const BurgerRouter = Router();
 
-BurgerRouter.get('/', BurgerController.getBurgers)
-    .get('/:id', BurgerController.getBurger)
-    .post('/', authenticateJwt, BurgerController.addBurger)
-    .put('/:id', authenticateJwt, BurgerController.updateBurger)
-    .delete('/:id', authenticateJwt, BurgerController.deleteBurger);
+BurgerRouter.get('/', BurgerController.getAll)
+    .get('/:id', BurgerController.getOne)
+    .post('/', authenticateJwt, BurgerController.add)
+    .put('/:id', authenticateJwt, BurgerController.update)
+    .delete('/:id', authenticateJwt, BurgerController.delete);
