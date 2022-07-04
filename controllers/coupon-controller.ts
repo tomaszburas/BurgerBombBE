@@ -1,13 +1,13 @@
 import { Response, Request } from 'express';
 import { CouponRecord } from '../db/records/coupon-record';
 import { ValidateError } from '../middlewares/handle-error';
+import { Role } from '../types';
 
 export class CouponController {
     static async add(req: Request, res: Response) {
         const { name, value } = req.body;
 
         const coupon = new CouponRecord({
-            _id: null,
             name: String(name),
             value: Number(value),
         });
@@ -20,25 +20,33 @@ export class CouponController {
     }
 
     static async update(req: Request, res: Response) {
-        const obj = req.body;
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect coupon id.');
+        if (!id) throw new ValidateError('Incorrect coupon id');
 
         const coupon = await CouponRecord.getOne(id);
 
-        if (obj.name) coupon.name = obj.name;
-        if (obj.value) coupon.value = obj.value;
+        const newCoupon = {
+            name: req.body.name ? req.body.name : '',
+            value: req.body.value ? req.body.value : 0,
+        };
 
-        await coupon.update();
+        const newCouponEntity = new CouponRecord({
+            id,
+            name: coupon.name,
+            value: coupon.value,
+        });
+
+        await newCouponEntity.update(newCoupon);
 
         res.status(200).json({
             success: true,
+            message: 'Coupon updated successfully',
         });
     }
 
     static async delete(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect coupon id.');
+        if (!id) throw new ValidateError('Incorrect coupon id');
 
         await CouponRecord.delete(id);
 
@@ -49,7 +57,7 @@ export class CouponController {
 
     static async getOne(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect coupon id.');
+        if (!id) throw new ValidateError('Incorrect coupon id');
 
         const coupon = await CouponRecord.getOne(id);
 
