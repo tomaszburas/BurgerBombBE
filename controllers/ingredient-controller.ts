@@ -43,14 +43,12 @@ export class IngredientController {
         const newIngredient = {
             name: req.body.name ? req.body.name : '',
             price: req.body.price ? Number(req.body.price) : 0,
-            quantity: req.body.quantity ? Number(req.body.quantity) : 0,
         };
 
         const newIngredientEntity = new IngredientRecord({
             id,
             name: ingredient.name,
             price: ingredient.price,
-            quantity: ingredient.quantity,
         });
 
         await newIngredientEntity.update(newIngredient);
