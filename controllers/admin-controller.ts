@@ -33,12 +33,14 @@ export class AdminController {
             })
             .json({
                 success: true,
+                message: 'Logged in successfully',
             });
     }
 
     static async logout(req: Request, res: Response) {
         res.status(200).clearCookie('access_token').json({
             success: true,
+            message: 'Successfully logged out',
         });
     }
 
@@ -57,7 +59,15 @@ export class AdminController {
 
         await user.create();
 
-        res.status(201).json({ success: true, message: 'User created' });
+        res.status(201).json({
+            success: true,
+            message: 'User created',
+            user: {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+            },
+        });
     }
 
     static async delete(req: Request, res: Response) {
@@ -66,7 +76,7 @@ export class AdminController {
 
         await AdminRecord.delete(req.params.id);
 
-        res.status(200).json({ success: true, message: 'User removed' });
+        res.status(200).json({ success: true, message: 'User removed', id: req.params.id });
     }
 
     static async getAll(req: Request, res: Response) {
@@ -98,11 +108,16 @@ export class AdminController {
             role: user.role,
         });
 
-        await newUserEntity.update(newUser);
+        const userResponse = await newUserEntity.update(newUser);
 
         res.status(200).json({
             success: true,
             message: 'User updated successfully',
+            user: {
+                id: userResponse.id,
+                email: userResponse.email,
+                role: userResponse.role,
+            },
         });
     }
 }

@@ -44,21 +44,27 @@ export class InformationRecord implements InfoEntity {
         return this.id;
     }
 
-    async update(obj: NewInfoEntity): Promise<void> {
+    async update(obj: NewInfoEntity): Promise<InfoEntity> {
+        const info = {
+            street: obj.street ? String(obj.street) : this.street,
+            number: obj.number ? String(obj.number) : this.number,
+            zipCode: obj.zipCode ? String(obj.zipCode) : this.zipCode,
+            city: obj.city ? String(obj.city) : this.city,
+            phone: obj.phone ? String(obj.phone) : this.phone,
+            email: obj.email ? String(obj.email) : this.email,
+            monThu: obj.monThu ? obj.monThu : this.monThu,
+            friSat: obj.friSat ? obj.friSat : this.friSat,
+            sun: obj.sun ? obj.sun : this.sun,
+        };
+
         await informationsCollection.replaceOne(
             { _id: new ObjectId(this.id) },
             {
-                street: obj.street ? String(obj.street) : this.street,
-                number: obj.number ? String(obj.number) : this.number,
-                zipCode: obj.zipCode ? String(obj.zipCode) : this.zipCode,
-                city: obj.city ? String(obj.city) : this.city,
-                phone: obj.phone ? String(obj.phone) : this.phone,
-                email: obj.email ? String(obj.email) : this.email,
-                monThu: obj.monThu ? obj.monThu : this.monThu,
-                friSat: obj.friSat ? obj.friSat : this.friSat,
-                sun: obj.sun ? obj.sun : this.sun,
+                ...info,
             }
         );
+
+        return new InformationRecord({ id: this.id, ...info });
     }
 
     static async get(): Promise<InfoEntity | null> {

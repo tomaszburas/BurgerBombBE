@@ -1,7 +1,6 @@
 import { Response, Request } from 'express';
 import { CouponRecord } from '../db/records/coupon-record';
 import { ValidateError } from '../middlewares/handle-error';
-import { Role } from '../types';
 
 export class CouponController {
     static async add(req: Request, res: Response) {
@@ -16,6 +15,8 @@ export class CouponController {
 
         res.status(201).json({
             success: true,
+            message: 'Coupon added successfully',
+            coupon,
         });
     }
 
@@ -36,11 +37,12 @@ export class CouponController {
             value: coupon.value,
         });
 
-        await newCouponEntity.update(newCoupon);
+        const couponResponse = await newCouponEntity.update(newCoupon);
 
         res.status(200).json({
             success: true,
             message: 'Coupon updated successfully',
+            coupon: couponResponse,
         });
     }
 
@@ -52,6 +54,8 @@ export class CouponController {
 
         res.status(200).json({
             success: true,
+            message: 'Coupon removed',
+            id: req.params.id,
         });
     }
 

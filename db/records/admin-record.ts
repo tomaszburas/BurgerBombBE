@@ -36,7 +36,7 @@ export class AdminRecord implements AdminEntity {
         return this.id;
     }
 
-    async update({ email, password, role }: NewAdminEntity): Promise<void> {
+    async update({ email, password, role }: NewAdminEntity): Promise<AdminEntity> {
         if (email) {
             if (!validationEmail(email)) throw new ValidateError('Incorrect email.');
         }
@@ -50,14 +50,15 @@ export class AdminRecord implements AdminEntity {
             password = await bcrypt.hash(password, 10);
         }
 
-        await usersCollection.replaceOne(
-            { _id: new ObjectId(this.id) },
-            {
-                email: email ? String(email) : this.email,
-                password: password ? String(password) : this.password,
-                role: role ? String(role) : this.role,
-            }
-        );
+        const user = {
+            email: email ? String(email) : this.email,
+            password: password ? String(password) : this.password,
+            role: role ? String(role) : this.role,
+        };
+
+        await usersCollection.replaceOne({ _id: new ObjectId(this.id) }, { ...user });
+
+        return new AdminRecord({ id: this.id, ...user });
     }
 
     static async delete(id: string): Promise<void> {

@@ -31,6 +31,7 @@ export class IngredientController {
         res.status(201).json({
             success: true,
             message: 'Ingredient added successfully',
+            ingredient,
         });
     }
 
@@ -51,11 +52,12 @@ export class IngredientController {
             price: ingredient.price,
         });
 
-        await newIngredientEntity.update(newIngredient);
+        const ingredientEntity = await newIngredientEntity.update(newIngredient);
 
         res.status(200).json({
             success: true,
             message: 'Ingredient updated successfully',
+            ingredient: ingredientEntity,
         });
     }
 
@@ -68,6 +70,7 @@ export class IngredientController {
         res.status(200).json({
             success: true,
             message: 'Ingredient removed',
+            id: req.params.id,
         });
     }
 }

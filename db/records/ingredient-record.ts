@@ -32,14 +32,20 @@ export class IngredientRecord implements IngredientEntity {
         await ingredientsCollection.deleteOne({ _id: new ObjectId(id) });
     }
 
-    async update({ name, price }: NewIngredientEntity): Promise<void> {
+    async update({ name, price }: NewIngredientEntity): Promise<IngredientEntity> {
+        const ingredient = {
+            name: name ? String(name.toLowerCase()) : this.name,
+            price: price ? Number(price) : this.price,
+        };
+
         await ingredientsCollection.replaceOne(
             { _id: new ObjectId(this.id) },
             {
-                name: name ? String(name.toLowerCase()) : this.name,
-                price: price ? Number(price) : this.price,
+                ...ingredient,
             }
         );
+
+        return new IngredientRecord({ id: this.id, ...ingredient });
     }
 
     static async getOne(id: string): Promise<IngredientEntity> {

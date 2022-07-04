@@ -27,14 +27,20 @@ export class CouponRecord implements CouponEntity {
         return this.id;
     }
 
-    async update({ name, value }: NewCouponEntity): Promise<void> {
+    async update({ name, value }: NewCouponEntity): Promise<CouponEntity> {
+        const coupon = {
+            name: name ? String(name) : this.name,
+            value: value ? Number(value) : this.value,
+        };
+
         await couponsCollection.replaceOne(
             { _id: new ObjectId(this.id) },
             {
-                name: name ? String(name) : this.name,
-                value: value ? Number(value) : this.value,
+                ...coupon,
             }
         );
+
+        return new CouponRecord({ id: this.id, ...coupon });
     }
 
     static async delete(id: string): Promise<void> {

@@ -1,14 +1,20 @@
-import { IngredientEntity } from './ingredient-entity';
-import { WithId, Document, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 
-export interface BurgerEntity extends WithId<Document> {
-    _id: ObjectId;
+export interface BurgerEntity {
+    id: string;
     name: string;
-    ingredients: IngredientEntity[];
+    ingredients: string[];
     price: number;
     img: string;
 }
 
-export interface NewBurgerEntity extends Omit<BurgerEntity, '_id'> {
-    _id?: ObjectId;
+export interface NewBurgerEntity extends Omit<BurgerEntity, 'id'> {
+    id?: string;
 }
+
+export interface BurgerEntityDB extends Omit<BurgerEntity, 'id'> {
+    _id: ObjectId;
+    id?: string;
+}
+
+export interface BurgerEntityResponse extends BurgerEntity {}

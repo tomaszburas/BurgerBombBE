@@ -84,11 +84,12 @@ export class InformationController {
             },
         });
 
-        await newInfoEntity.update(newInfo);
+        const infoResponse = await newInfoEntity.update(newInfo);
 
         res.status(200).json({
             success: true,
             message: 'Info updated successfully',
+            info: infoResponse,
         });
     }
 

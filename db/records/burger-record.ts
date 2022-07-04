@@ -1,74 +1,83 @@
-import { BurgerEntity, IngredientEntity, NewBurgerEntity } from '../../types';
+import { BurgerEntity, BurgerEntityDB, NewBurgerEntity } from '../../types';
 import { burgersCollection } from '../connect';
 import { ObjectId } from 'mongodb';
 import { ValidateError } from '../../middlewares/handle-error';
 
 export class BurgerRecord implements BurgerEntity {
-    _id: ObjectId;
+    id: string;
     name: string;
-    ingredients: IngredientEntity[];
+    ingredients: string[];
     price: number;
     img: string;
 
     constructor(obj: NewBurgerEntity) {
-        this._id = obj._id;
+        this.id = obj.id;
         this.name = obj.name;
         this.ingredients = obj.ingredients;
         this.price = obj.price;
         this.img = obj.img;
     }
 
-    async add(): Promise<BurgerEntity['_id']> {
+    async add(): Promise<string> {
+        if (!this.name) throw new ValidateError('The name of burger is missing');
+        if (this.ingredients.length < 3) throw new ValidateError('Count ingredients must be greater than 3');
+        if (this.price <= 0) throw new ValidateError('Burger price must be greater than 0');
+        if (!this.img) throw new ValidateError('The img of burger is missing');
+
         const { insertedId } = await burgersCollection.insertOne({
-            name: String(this.name),
+            name: String(this.name.toLowerCase()),
             ingredients: this.ingredients,
             price: Number(this.price),
             img: String(this.img),
         });
 
-        this._id = insertedId;
-        return insertedId;
+        this.id = insertedId.toString();
+        return this.id;
     }
 
     static async delete(id: string): Promise<void> {
-        if (!ObjectId.isValid(id)) throw new ValidateError('Coupon id is invalid.');
+        if (!ObjectId.isValid(id)) throw new ValidateError('Burger id is invalid');
         await burgersCollection.deleteOne({ _id: new ObjectId(id) });
     }
 
-    async update(): Promise<void> {
-        if (typeof this.name !== 'string') throw new ValidateError('Typeof name must be a string');
-        if (typeof this.price !== 'number') throw new ValidateError('Typeof price must be a number');
-        if (typeof this.img !== 'string') throw new ValidateError('Typeof img must be a string');
-
+    async update({ name, ingredients, price, img }: NewBurgerEntity): Promise<void> {
         await burgersCollection.replaceOne(
-            { _id: this._id },
+            { _id: new ObjectId(this.id) },
             {
-                name: this.name,
-                ingredients: this.ingredients,
-                price: this.price,
-                img: this.img,
+                name: name ? String(name.toLowerCase()) : this.name,
+                ingredients: ingredients.length >= 3 ? ingredients : this.ingredients,
+                price: price ? Number(price) : this.price,
+                img: img ? String(img) : this.img,
             }
         );
     }
 
     static async getOne(id: string): Promise<BurgerEntity> {
-        if (!ObjectId.isValid(id)) throw new ValidateError('Burger id is invalid.');
+        if (!ObjectId.isValid(id)) throw new ValidateError('Burger id is invalid');
 
         const item = (await burgersCollection.findOne({
             _id: new ObjectId(id),
-        })) as BurgerEntity;
+        })) as BurgerEntityDB;
 
-        if (!item) throw new ValidateError('In database dont have burger with given id.');
+        if (!item) throw new ValidateError('In database dont have burger with given id');
+
+        item.id = item._id.toString();
 
         return new BurgerRecord(item);
     }
 
     static async getAll(): Promise<BurgerEntity[]> {
-        const result = await burgersCollection.find();
-        const resultArray = (await result.toArray()) as BurgerEntity[];
+        const cursor = await burgersCollection.find().sort({ name: 1 });
+        const burgers = await cursor.toArray();
 
-        if (!resultArray.length) throw new ValidateError('In database dont have any burgers.');
-
-        return resultArray;
+        return burgers.length === 0
+            ? []
+            : burgers.map((burger: BurgerEntityDB) => ({
+                  id: burger._id.toString(),
+                  name: burger.name,
+                  ingredients: burger.ingredients,
+                  price: burger.price,
+                  img: burger.img,
+              }));
     }
 }
