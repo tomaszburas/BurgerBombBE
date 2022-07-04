@@ -88,7 +88,7 @@ export class InformationController {
 
         res.status(200).json({
             success: true,
-            message: 'Info update successfully',
+            message: 'Info updated successfully',
         });
     }
 

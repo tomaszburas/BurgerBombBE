@@ -53,6 +53,8 @@ export class IngredientRecord implements IngredientEntity {
 
         if (!item) throw new ValidateError('In database dont have ingredient with given id');
 
+        item.id = item._id.toString();
+
         return new IngredientRecord(item);
     }
 

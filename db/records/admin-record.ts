@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
 import { ValidateError } from '../../middlewares/handle-error';
 import { validatePassword } from '../../utils/validate-password';
-import { AdminEntity, AdminEntityDB, AdminEntityResponse, NewAdminEntity, Role } from '../../types';
+import { AdminEntity, AdminEntityDB, AdminEntityResponse, NewAdminEntity } from '../../types';
 import { usersCollection } from '../connect';
 import { validationEmail } from '../../utils/validate-email';
 
