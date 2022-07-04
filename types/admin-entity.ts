@@ -18,6 +18,7 @@ export interface NewAdminEntity extends Omit<AdminEntity, 'id'> {
 
 export interface AdminEntityDB extends Omit<AdminEntity, 'id'> {
     _id: ObjectId;
+    id?: string;
 }
 
 export interface AdminEntityResponse extends Omit<AdminEntity, 'password'> {}
