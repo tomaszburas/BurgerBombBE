@@ -1,14 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
+import multer from 'multer';
 
-export class ValidateError extends Error {}
+export class ValidationError extends Error {}
 export class AuthError extends Error {}
 
-export const handleError = (
-    err: any,
-    req: Request,
-    res: Response,
-    next: NextFunction
-): void => {
+export const handleError = (err: any, req: Request, res: Response, next: NextFunction): void => {
     if (err instanceof AuthError) {
         res.status(401).json({
             success: false,
@@ -17,7 +13,15 @@ export const handleError = (
         return;
     }
 
-    if (err instanceof ValidateError) {
+    if (err instanceof ValidationError) {
+        res.status(400).json({
+            success: false,
+            message: err.message,
+        });
+        return;
+    }
+
+    if (err instanceof multer.MulterError) {
         res.status(400).json({
             success: false,
             message: err.message,
@@ -27,8 +31,7 @@ export const handleError = (
 
     let message = '';
     if (err.sqlState) message = 'Database problem';
-    if (err.errno === 1062)
-        message = 'A user with this username exists in our database';
+    if (err.errno === 1062) message = 'A user with this username exists in our database';
 
     res.status(err.errno === 1062 ? 400 : 500).json({
         success: false,

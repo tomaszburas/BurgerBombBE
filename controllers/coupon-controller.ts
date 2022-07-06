@@ -1,6 +1,6 @@
 import { Response, Request } from 'express';
 import { CouponRecord } from '../db/records/coupon-record';
-import { ValidateError } from '../middlewares/handle-error';
+import { ValidationError } from '../middlewares/handle-error';
 
 export class CouponController {
     static async add(req: Request, res: Response) {
@@ -22,7 +22,7 @@ export class CouponController {
 
     static async update(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect coupon id');
+        if (!id) throw new ValidationError('Incorrect coupon id');
 
         const coupon = await CouponRecord.getOne(id);
 
@@ -48,20 +48,20 @@ export class CouponController {
 
     static async delete(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect coupon id');
+        if (!id) throw new ValidationError('Incorrect coupon id');
 
         await CouponRecord.delete(id);
 
         res.status(200).json({
             success: true,
             message: 'Coupon removed',
-            id: req.params.id,
+            id,
         });
     }
 
     static async getOne(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect coupon id');
+        if (!id) throw new ValidationError('Incorrect coupon id');
 
         const coupon = await CouponRecord.getOne(id);
 

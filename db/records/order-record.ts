@@ -1,7 +1,7 @@
 import { OrderEntity, OrderStatus, NewOrderEntity, PaymentMethod } from '../../types';
 import { ObjectId } from 'mongodb';
 import { ordersCollection } from '../connect';
-import { ValidateError } from '../../middlewares/handle-error';
+import { ValidationError } from '../../middlewares/handle-error';
 
 export class OrderRecord implements OrderEntity {
     id: string;
@@ -48,7 +48,7 @@ export class OrderRecord implements OrderEntity {
     }
 
     static async updateStatus(id: string, status: OrderEntity['status']): Promise<void> {
-        if (!ObjectId.isValid(id)) throw new ValidateError('Order id is invalid.');
+        if (!ObjectId.isValid(id)) throw new ValidationError('Order id is invalid.');
 
         await ordersCollection.updateOne(
             { _id: id },
@@ -61,20 +61,20 @@ export class OrderRecord implements OrderEntity {
     }
 
     static async delete(id: string): Promise<void> {
-        if (!ObjectId.isValid(id)) throw new ValidateError('Order id is invalid.');
+        if (!ObjectId.isValid(id)) throw new ValidationError('Order id is invalid.');
         await ordersCollection.deleteOne({ _id: new ObjectId(id) });
     }
 
     static async getOne(id: string): Promise<OrderEntity> {
         if (!ObjectId.isValid(id)) {
-            throw new ValidateError('Order id is invalid.');
+            throw new ValidationError('Order id is invalid.');
         }
 
         const item = (await ordersCollection.findOne({
             _id: new ObjectId(id),
         })) as any;
 
-        if (!item) throw new ValidateError('In database dont have ingredient with given id.');
+        if (!item) throw new ValidationError('In database dont have ingredient with given id.');
 
         return new OrderRecord(item);
     }
@@ -83,7 +83,7 @@ export class OrderRecord implements OrderEntity {
         const result = await ordersCollection.find();
         const resultArray = (await result.toArray()) as any[];
 
-        if (!resultArray.length) throw new ValidateError('Id database dont have any order.');
+        if (!resultArray.length) throw new ValidationError('Id database dont have any order.');
 
         return resultArray;
     }

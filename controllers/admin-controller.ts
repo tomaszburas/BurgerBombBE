@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import { AdminRecord } from '../db/records/admin-record';
 import { ACCESS_TOKEN } from '../config';
 import jwt from 'jsonwebtoken';
-import { ValidateError } from '../middlewares/handle-error';
-import { Role } from '../types';
+import { ValidationError } from '../middlewares/handle-error';
+import { checkPermissions } from '../utils/check-permissions';
 
 export class AdminController {
     static async auth(req: Request, res: Response) {
@@ -16,14 +16,11 @@ export class AdminController {
 
     static async login(req: Request, res: Response) {
         const { email, password } = req.body;
-
         const user = await AdminRecord.login(email, password);
-
         const payload = {
             id: user.id,
             mail: user.email,
         };
-
         const token = jwt.sign(payload, ACCESS_TOKEN, { expiresIn: '1d' });
 
         res.status(200)
@@ -45,11 +42,11 @@ export class AdminController {
     }
 
     static async create(req: Request, res: Response) {
-        if (req.user.role !== Role.SUPER_ADMIN) throw new ValidateError('Only super admin can add new users');
+        checkPermissions(req.user.role);
         const { email, password, role } = req.body;
 
         const userEntity = await AdminRecord.getByEmail(email);
-        if (userEntity) throw new ValidateError('This email has been taken.');
+        if (userEntity) throw new ValidationError('This email has been taken.');
 
         const user = new AdminRecord({
             email,
@@ -71,8 +68,8 @@ export class AdminController {
     }
 
     static async delete(req: Request, res: Response) {
-        if (req.user.role !== Role.SUPER_ADMIN) throw new ValidateError('Only super admin can remove users');
-        if (req.user.id === req.params.id) throw new ValidateError('You cannot remove yourself');
+        checkPermissions(req.user.role);
+        if (req.user.id === req.params.id) throw new ValidationError('You cannot remove yourself');
 
         await AdminRecord.delete(req.params.id);
 
@@ -82,41 +79,30 @@ export class AdminController {
     static async getAll(req: Request, res: Response) {
         const users = await AdminRecord.getAll();
 
-        if (!users) throw new ValidateError('There are no users in the database');
+        if (!users) throw new ValidationError('There are no users in the database');
 
         res.status(200).json({ success: true, users });
     }
 
     static async update(req: Request, res: Response) {
-        if (req.user.role !== Role.SUPER_ADMIN) throw new ValidateError('Only super admin can update users');
-
+        checkPermissions(req.user.role);
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect user id.');
+        const { email, role, password } = req.body;
 
         const user = await AdminRecord.getById(id);
 
-        const newUser = {
-            email: req.body.email ? req.body.email : '',
-            password: req.body.password ? req.body.password : '',
-            role: req.body.role ? req.body.role : '',
-        };
+        user.email = email;
+        user.role = role;
 
-        const newUserEntity = new AdminRecord({
-            id,
-            email: user.email,
-            password: user.password,
-            role: user.role,
-        });
-
-        const userResponse = await newUserEntity.update(newUser);
+        await user.update(password);
 
         res.status(200).json({
             success: true,
             message: 'User updated successfully',
             user: {
-                id: userResponse.id,
-                email: userResponse.email,
-                role: userResponse.role,
+                id: user.id,
+                email: user.email,
+                role: user.role,
             },
         });
     }

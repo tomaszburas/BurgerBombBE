@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
+import { promises as fs } from 'fs';
 import { BurgerRecord } from '../db/records/burger-record';
-import { ValidateError } from '../middlewares/handle-error';
-import { checkIngredients } from '../utils/check-ingredients';
+import { ValidationError } from '../middlewares/handle-error';
+import { IngredientRecord } from '../db/records/ingredient-record';
+import path from 'path';
 
 export class BurgerController {
     static async getAll(req: Request, res: Response) {
@@ -15,7 +17,7 @@ export class BurgerController {
 
     static async getOne(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect burger id');
+        if (!id) throw new ValidationError('Incorrect burger id');
 
         const burger = await BurgerRecord.getOne(id);
 
@@ -26,59 +28,79 @@ export class BurgerController {
     }
 
     static async add(req: Request, res: Response) {
-        if (!(await checkIngredients(req.body.ingredients)))
-            throw new ValidateError('The burger has too few ingredients or an ingredient is not in the database');
+        const { name, price, ingredients, active } = req.body;
+        const filename = req.file ? req.file.filename : null;
 
-        const createBurger = new BurgerRecord(req.body);
-        await createBurger.add();
+        const ingredientsDb = (
+            await Promise.all(JSON.parse(ingredients).map((id: string) => IngredientRecord.getOne(id)))
+        ).map((ingredient) => ({ name: ingredient.name, id: ingredient.id }));
+
+        const burger = new BurgerRecord({
+            name: name.toLowerCase(),
+            price: Number(price),
+            img: filename,
+            ingredients: ingredientsDb,
+            active: JSON.parse(active),
+        });
+        await burger.add();
 
         res.status(201).json({
             success: true,
             message: 'Burger added successfully',
+            burger,
         });
     }
 
     static async update(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect burger id');
+        const { name, price, ingredients, active } = req.body;
 
-        if (req.body.ingredients >= 3) {
-            await checkIngredients(req.body.ingredients);
-        }
+        const ingredientsDb = (
+            await Promise.all(JSON.parse(ingredients).map((id: string) => IngredientRecord.getOne(id)))
+        ).map((ingredient) => ({ name: ingredient.name, id: ingredient.id }));
 
         const burger = await BurgerRecord.getOne(id);
 
-        const newBurger = {
-            name: req.body.name ? req.body.name : '',
-            price: req.body.price ? Number(req.body.price) : 0,
-            ingredients: req.body.ingredients.length >= 3 ? req.body.ingredients : [],
-            img: req.body.img ? req.body.img : '',
-        };
+        if (req.file) {
+            fs.unlink(path.join(__dirname, '../public', 'images', burger.img));
+        }
 
-        const newBurgerEntity = new BurgerRecord({
-            id,
-            name: burger.name,
-            price: burger.price,
-            img: burger.img,
-            ingredients: burger.ingredients,
-        });
+        burger.name = name.toLowerCase();
+        burger.price = Number(price);
+        burger.ingredients = ingredientsDb;
+        burger.active = JSON.parse(active);
+        burger.img = req.file ? req.file.filename : burger.img;
 
-        await newBurgerEntity.update(newBurger);
+        await burger.update();
 
         res.status(200).json({
             success: true,
+            message: 'Burger updated successfully',
+            burger,
         });
     }
 
     static async delete(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect burger id');
-
+        const { img } = await BurgerRecord.getOne(id);
         await BurgerRecord.delete(id);
+        fs.unlink(path.join(__dirname, '../public', 'images', img));
 
         res.status(200).json({
             success: true,
             message: 'Burger removed',
+            id,
+        });
+    }
+
+    static async updateActive(req: Request, res: Response) {
+        const id = req.params.id;
+        const active = req.body.active;
+
+        await BurgerRecord.updateActive(id, active);
+
+        res.status(200).json({
+            success: true,
         });
     }
 }

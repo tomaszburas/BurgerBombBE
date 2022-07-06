@@ -2,7 +2,7 @@ import { InfoEntity, InfoEntityDB, NewInfoEntity } from '../../types';
 import { informationsCollection } from '../connect';
 import { ObjectId } from 'mongodb';
 
-export class InformationRecord implements InfoEntity {
+export class InfoRecord implements InfoEntity {
     id: string;
     street: string;
     number: string;
@@ -64,7 +64,7 @@ export class InformationRecord implements InfoEntity {
             }
         );
 
-        return new InformationRecord({ id: this.id, ...info });
+        return new InfoRecord({ id: this.id, ...info });
     }
 
     static async get(): Promise<InfoEntity | null> {
@@ -72,7 +72,7 @@ export class InformationRecord implements InfoEntity {
 
         return !item
             ? null
-            : new InformationRecord({
+            : new InfoRecord({
                   id: item._id.toString(),
                   street: item.street,
                   number: item.number,

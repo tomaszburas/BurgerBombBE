@@ -1,7 +1,7 @@
 import { CouponEntity, CouponEntityDB, NewCouponEntity } from '../../types';
 import { ObjectId } from 'mongodb';
 import { couponsCollection } from '../connect';
-import { ValidateError } from '../../middlewares/handle-error';
+import { ValidationError } from '../../middlewares/handle-error';
 
 export class CouponRecord implements CouponEntity {
     id: string;
@@ -15,8 +15,9 @@ export class CouponRecord implements CouponEntity {
     }
 
     async add(): Promise<string> {
-        if (this.name === '') throw new ValidateError('Coupon name cannot be empty');
-        if (this.value <= 0 || this.value > 100) throw new ValidateError('The coupon value must be between 1 and 100');
+        if (this.name === '') throw new ValidationError('Coupon name cannot be empty');
+        if (this.value <= 0 || this.value > 100)
+            throw new ValidationError('The coupon value must be between 1 and 100');
 
         const { insertedId } = await couponsCollection.insertOne({
             name: String(this.name),
@@ -44,16 +45,16 @@ export class CouponRecord implements CouponEntity {
     }
 
     static async delete(id: string): Promise<void> {
-        if (!ObjectId.isValid(id)) throw new ValidateError('Coupon id is invalid');
+        if (!ObjectId.isValid(id)) throw new ValidationError('Coupon id is invalid');
         await couponsCollection.deleteOne({ _id: new ObjectId(id) });
     }
 
     static async getOne(id: string): Promise<CouponEntity> {
-        if (!ObjectId.isValid(id)) throw new ValidateError('Coupon id is invalid');
+        if (!ObjectId.isValid(id)) throw new ValidationError('Coupon id is invalid');
 
         const coupon = (await couponsCollection.findOne({ _id: new ObjectId(id) })) as CouponEntityDB;
 
-        if (!coupon) throw new ValidateError('In database dont have coupon with given id');
+        if (!coupon) throw new ValidationError('In database dont have coupon with given id');
 
         coupon.id = coupon._id.toString();
 

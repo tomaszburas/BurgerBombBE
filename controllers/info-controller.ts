@@ -1,12 +1,12 @@
 import { Response, Request } from 'express';
-import { InformationRecord } from '../db/records/information-record';
-import { ValidateError } from '../middlewares/handle-error';
+import { InfoRecord } from '../db/records/info-record';
+import { ValidationError } from '../middlewares/handle-error';
 
-export class InformationController {
+export class InfoController {
     static async add(req: Request, res: Response) {
         const { street, number, zipCode, city, phone, email, monThu, friSat, sun } = req.body;
 
-        const info = new InformationRecord({
+        const info = new InfoRecord({
             street,
             number,
             zipCode,
@@ -37,9 +37,9 @@ export class InformationController {
 
     static async update(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect info id');
+        if (!id) throw new ValidationError('Incorrect info id');
 
-        const info = await InformationRecord.get();
+        const info = await InfoRecord.get();
 
         const newInfo = {
             street: req.body.street ? req.body.street : '',
@@ -62,7 +62,7 @@ export class InformationController {
             },
         };
 
-        const newInfoEntity = new InformationRecord({
+        const newInfoEntity = new InfoRecord({
             id,
             street: info.street,
             number: info.number,
@@ -94,7 +94,7 @@ export class InformationController {
     }
 
     static async get(req: Request, res: Response) {
-        const info = await InformationRecord.get();
+        const info = await InfoRecord.get();
 
         res.status(200).json({
             success: true,

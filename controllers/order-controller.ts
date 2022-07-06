@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import { OrderRecord } from '../db/records/order-record';
 import { CouponRecord } from '../db/records/coupon-record';
-import { ValidateError } from '../middlewares/handle-error';
-import { ObjectId } from 'mongodb';
-import { checkIngredients } from '../utils/check-ingredients';
+import { ValidationError } from '../middlewares/handle-error';
 import { orderValue } from '../utils/new-order';
 import { OrderStatus } from '../types';
 
@@ -46,7 +44,7 @@ export class OrderController {
     static async updateStatus(req: Request, res: Response) {
         const { status } = req.body;
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect order id.');
+        if (!id) throw new ValidationError('Incorrect order id.');
 
         await OrderRecord.updateStatus(id, status);
 
@@ -57,7 +55,7 @@ export class OrderController {
 
     static async delete(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect coupon id.');
+        if (!id) throw new ValidationError('Incorrect coupon id.');
 
         await OrderRecord.delete(id);
 
@@ -68,7 +66,7 @@ export class OrderController {
 
     static async getOne(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidateError('Incorrect coupon id.');
+        if (!id) throw new ValidationError('Incorrect coupon id.');
 
         const order = await OrderRecord.getOne(id);
 

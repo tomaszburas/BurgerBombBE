@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
-import { ValidateError } from '../../middlewares/handle-error';
-import { validatePassword } from '../../utils/validate-password';
+import { ValidationError } from '../../middlewares/handle-error';
+import { validationPassword } from '../../utils/validation-password';
 import { AdminEntity, AdminEntityDB, AdminEntityResponse, NewAdminEntity } from '../../types';
 import { usersCollection } from '../connect';
-import { validationEmail } from '../../utils/validate-email';
+import { validationEmail } from '../../utils/validation-email';
 
 export class AdminRecord implements AdminEntity {
     id: string;
@@ -20,9 +20,11 @@ export class AdminRecord implements AdminEntity {
     }
 
     async create(): Promise<string> {
-        if (!validationEmail(this.email)) throw new ValidateError('Incorrect email.');
-        if (!validatePassword(this.password))
-            throw new ValidateError('Password must contain min. 5 characters, one digit and one upper case character');
+        if (!validationEmail(this.email)) throw new ValidationError('Incorrect email.');
+        if (!validationPassword(this.password))
+            throw new ValidationError(
+                'Password must contain min. 5 characters, one digit and one upper case character'
+            );
 
         this.password = await bcrypt.hash(this.password, 10);
 
@@ -36,52 +38,51 @@ export class AdminRecord implements AdminEntity {
         return this.id;
     }
 
-    async update({ email, password, role }: NewAdminEntity): Promise<AdminEntity> {
-        if (email) {
-            if (!validationEmail(email)) throw new ValidateError('Incorrect email.');
-        }
+    async update(password: string): Promise<void> {
+        if (!validationEmail(this.email)) throw new ValidationError('Incorrect email.');
 
-        if (password) {
-            if (!validatePassword(password))
-                throw new ValidateError(
+        if (password.length > 0) {
+            if (!validationPassword(password))
+                throw new ValidationError(
                     'Password must contain min. 5 characters, one digit and one upper case character'
                 );
 
-            password = await bcrypt.hash(password, 10);
+            this.password = await bcrypt.hash(password, 10);
         }
 
-        const user = {
-            email: email ? String(email) : this.email,
-            password: password ? String(password) : this.password,
-            role: role ? String(role) : this.role,
-        };
-
-        await usersCollection.replaceOne({ _id: new ObjectId(this.id) }, { ...user });
-
-        return new AdminRecord({ id: this.id, ...user });
+        await usersCollection.updateOne(
+            { _id: new ObjectId(this.id) },
+            {
+                $set: {
+                    email: this.email,
+                    password: this.password,
+                    role: this.role,
+                },
+            }
+        );
     }
 
     static async delete(id: string): Promise<void> {
-        if (!ObjectId.isValid(id)) throw new ValidateError('User id is invalid.');
+        if (!ObjectId.isValid(id)) throw new ValidationError('User id is invalid.');
 
         await usersCollection.deleteOne({ _id: new ObjectId(id) });
     }
 
-    static async getById(id: string): Promise<AdminEntity> {
-        if (!ObjectId.isValid(id)) throw new ValidateError('User id is invalid.');
+    static async getById(id: string): Promise<AdminRecord> {
+        if (!ObjectId.isValid(id)) throw new ValidationError('User id is invalid');
 
         const user = (await usersCollection.findOne({
             _id: new ObjectId(id),
         })) as AdminEntityDB;
 
-        if (!user) throw new ValidateError('In database dont have user with given id.');
+        if (!user) throw new ValidationError('In database dont have user with given id');
 
         user.id = user._id.toString();
 
         return new AdminRecord(user);
     }
 
-    static async getByEmail(email: string): Promise<AdminEntity | null> {
+    static async getByEmail(email: string): Promise<AdminRecord | null> {
         const user = (await usersCollection.findOne({
             email: String(email),
         })) as AdminEntityDB;
@@ -92,12 +93,12 @@ export class AdminRecord implements AdminEntity {
         return new AdminRecord(user);
     }
 
-    static async login(email: string, password: string): Promise<AdminEntity> {
+    static async login(email: string, password: string): Promise<AdminRecord> {
         const user = await this.getByEmail(email);
-        if (!user) throw new ValidateError('User not found');
+        if (!user) throw new ValidationError('User not found');
 
         const passwordMatch = await bcrypt.compare(password, user.password);
-        if (!passwordMatch) throw new ValidateError('Password not valid');
+        if (!passwordMatch) throw new ValidationError('Password not valid');
 
         return new AdminRecord(user);
     }

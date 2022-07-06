@@ -1,7 +1,7 @@
 import { IngredientEntity, IngredientEntityDB, NewIngredientEntity } from '../../types';
 import { ObjectId } from 'mongodb';
 import { ingredientsCollection } from '../connect';
-import { ValidateError } from '../../middlewares/handle-error';
+import { ValidationError } from '../../middlewares/handle-error';
 
 export class IngredientRecord implements IngredientEntity {
     id: string;
@@ -15,7 +15,7 @@ export class IngredientRecord implements IngredientEntity {
     }
 
     async add(): Promise<string> {
-        if (!this.name) throw new ValidateError('The name of the ingredient is missing');
+        if (!this.name) throw new ValidationError('The name of the ingredient is missing');
 
         const { insertedId } = await ingredientsCollection.insertOne({
             name: String(this.name.toLowerCase()),
@@ -27,7 +27,7 @@ export class IngredientRecord implements IngredientEntity {
     }
 
     static async delete(id: string): Promise<void> {
-        if (!ObjectId.isValid(id)) throw new ValidateError('User id is invalid');
+        if (!ObjectId.isValid(id)) throw new ValidationError('User id is invalid');
 
         await ingredientsCollection.deleteOne({ _id: new ObjectId(id) });
     }
@@ -50,14 +50,14 @@ export class IngredientRecord implements IngredientEntity {
 
     static async getOne(id: string): Promise<IngredientEntity> {
         if (!ObjectId.isValid(id)) {
-            throw new ValidateError('Ingredient id is invalid');
+            throw new ValidationError('Ingredient id is invalid');
         }
 
         const item = (await ingredientsCollection.findOne({
             _id: new ObjectId(id),
         })) as IngredientEntityDB;
 
-        if (!item) throw new ValidateError('In database dont have ingredient with given id');
+        if (!item) throw new ValidationError('In database dont have ingredient with given id');
 
         item.id = item._id.toString();
 
@@ -75,5 +75,14 @@ export class IngredientRecord implements IngredientEntity {
                   name: ingredient.name,
                   price: ingredient.price,
               }));
+    }
+
+    static async getNames(arr: string[]): Promise<string[]> {
+        return (await this.getAll()).map((e) => {
+            const check = arr.findIndex((id: string) => id === e.id);
+            if (check >= 0) {
+                return e.name;
+            }
+        });
     }
 }

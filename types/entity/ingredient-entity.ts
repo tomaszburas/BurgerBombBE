@@ -16,3 +16,5 @@ export interface IngredientEntityDB extends Omit<IngredientEntity, 'id'> {
 }
 
 export interface IngredientEntityResponse extends IngredientEntity {}
+
+export interface BurgerIngredient extends Omit<IngredientEntity, 'price'> {}

@@ -13,10 +13,11 @@ import { PORT } from './config';
 import { CouponRouter } from './routes/coupon-router';
 
 import './middlewares/passport';
-import { InformationRouter } from './routes/information-router';
+import { InfoRouter } from './routes/info-router';
 
 const app = express();
 
+app.use(express.static('./public'));
 app.use(json());
 app.use(
     cors({
@@ -32,7 +33,7 @@ app.use('/api/ingredient', IngredientRouter);
 app.use('/api/admin', AdminRouter);
 app.use('/api/order', OrderRouter);
 app.use('/api/coupon', CouponRouter);
-app.use('/api/info', InformationRouter);
+app.use('/api/info', InfoRouter);
 
 app.use(handleError);
 
