@@ -31,15 +31,11 @@ export class BurgerController {
         const { name, price, ingredients, active } = req.body;
         const filename = req.file ? req.file.filename : null;
 
-        const ingredientsDb = (
-            await Promise.all(JSON.parse(ingredients).map((id: string) => IngredientRecord.getOne(id)))
-        ).map((ingredient) => ({ name: ingredient.name, id: ingredient.id }));
-
         const burger = new BurgerRecord({
             name: name.toLowerCase(),
             price: Number(price),
             img: filename,
-            ingredients: ingredientsDb,
+            ingredients: await IngredientRecord.getForResponse(JSON.parse(ingredients)),
             active: JSON.parse(active),
         });
         await burger.add();
@@ -55,10 +51,6 @@ export class BurgerController {
         const id = req.params.id;
         const { name, price, ingredients, active } = req.body;
 
-        const ingredientsDb = (
-            await Promise.all(JSON.parse(ingredients).map((id: string) => IngredientRecord.getOne(id)))
-        ).map((ingredient) => ({ name: ingredient.name, id: ingredient.id }));
-
         const burger = await BurgerRecord.getOne(id);
 
         if (req.file) {
@@ -67,7 +59,7 @@ export class BurgerController {
 
         burger.name = name.toLowerCase();
         burger.price = Number(price);
-        burger.ingredients = ingredientsDb;
+        burger.ingredients = await IngredientRecord.getForResponse(JSON.parse(ingredients));
         burger.active = JSON.parse(active);
         burger.img = req.file ? req.file.filename : burger.img;
 

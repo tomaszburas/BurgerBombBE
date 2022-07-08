@@ -28,6 +28,7 @@ export interface NewInfoEntity extends Omit<InfoEntity, 'id'> {
 
 export interface InfoEntityDB extends Omit<InfoEntity, 'id'> {
     _id: ObjectId;
+    id?: string;
 }
 
 export interface InfoEntityResponse extends InfoEntity {}

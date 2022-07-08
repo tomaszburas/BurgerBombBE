@@ -2,6 +2,9 @@ import { BurgerEntity, BurgerEntityDB, BurgerIngredient, IngredientEntity, NewBu
 import { burgersCollection } from '../connect';
 import { ObjectId } from 'mongodb';
 import { ValidationError } from '../../middlewares/handle-error';
+import { saveBurgers } from '../../utils/save-burgers';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 export class BurgerRecord implements BurgerEntity {
     id: string;
@@ -21,11 +24,21 @@ export class BurgerRecord implements BurgerEntity {
     }
 
     private valid() {
-        if (this.name.length < 3 || this.name.length > 15)
+        if (this.name.length < 3 || this.name.length > 15) {
+            fs.unlink(path.join(__dirname, '../../public', 'images', this.img));
             throw new ValidationError('The burger name must be more than 3 letters and less than 15 characters');
-        if (this.ingredients.length < 3) throw new ValidationError('Count ingredients must be greater than 3');
-        if (this.price <= 0) throw new ValidationError('Burger price must be greater than 0');
-        if (!this.img) throw new ValidationError('The img of burger is missing');
+        }
+        if (this.ingredients.length < 3) {
+            fs.unlink(path.join(__dirname, '../../public', 'images', this.img));
+            throw new ValidationError('Count ingredients must be greater than 3');
+        }
+        if (this.price <= 0) {
+            fs.unlink(path.join(__dirname, '../../public', 'images', this.img));
+            throw new ValidationError('Burger price must be greater than 0');
+        }
+        if (!this.img) {
+            throw new ValidationError('The img of burger is missing');
+        }
     }
 
     async add(): Promise<string> {
@@ -34,7 +47,7 @@ export class BurgerRecord implements BurgerEntity {
             name: String(this.name.toLowerCase()),
             ingredients: this.ingredients,
             price: Number(this.price),
-            active: this.active,
+            active: Boolean(this.active),
             img: String(this.img),
         });
 
@@ -53,14 +66,54 @@ export class BurgerRecord implements BurgerEntity {
             { _id: new ObjectId(this.id) },
             {
                 $set: {
-                    name: this.name.toLowerCase(),
-                    price: this.price,
+                    name: String(this.name.toLowerCase()),
+                    price: Number(this.price),
                     ingredients: this.ingredients,
-                    active: this.active,
-                    img: this.img,
+                    active: Boolean(this.active),
+                    img: String(this.img),
                 },
             }
         );
+    }
+
+    static async updateIngredient(id: string, name: string): Promise<BurgerRecord[]> {
+        const burgers = await this.getAll();
+
+        const burgersUpdated = burgers.map((burger) => {
+            burger.ingredients.map((ingredient: IngredientEntity) => {
+                if (ingredient.id === id) {
+                    ingredient.name = String(name).toLowerCase();
+                }
+            });
+            return burger;
+        });
+
+        const res = await saveBurgers(burgersUpdated);
+
+        return res.length === 0 ? [] : burgersUpdated.map((burger) => new BurgerRecord(burger));
+    }
+
+    static async deleteIngredient(id: string): Promise<BurgerRecord[]> {
+        const burgers = await this.getAll();
+
+        const burgersUpdated = burgers.map((burger) => {
+            const ingredients = burger.ingredients.filter((ingredient: IngredientEntity) => {
+                if (ingredient.id === id) {
+                    throw new ValidationError(
+                        'You cannot delete the selected ingredient. It is a component of the burger'
+                    );
+                }
+                return ingredient.id !== id;
+            });
+            return {
+                ...burger,
+                ingredients: ingredients,
+            };
+        }) as BurgerRecord[];
+
+        const res = await saveBurgers(burgersUpdated);
+
+        return res.length === 0 ? [] : burgersUpdated.map((burger) => new BurgerRecord(burger));
     }
 
     static async getOne(id: string): Promise<BurgerRecord> {
@@ -100,7 +153,7 @@ export class BurgerRecord implements BurgerEntity {
             },
             {
                 $set: {
-                    active,
+                    active: Boolean(active),
                 },
             }
         );

@@ -1,4 +1,4 @@
-import { CouponEntity, CouponEntityDB, NewCouponEntity } from '../../types';
+import { CouponEntity, CouponEntityDB, CouponEntityResponse, NewCouponEntity } from '../../types';
 import { ObjectId } from 'mongodb';
 import { couponsCollection } from '../connect';
 import { ValidationError } from '../../middlewares/handle-error';
@@ -14,11 +14,14 @@ export class CouponRecord implements CouponEntity {
         this.value = obj.value;
     }
 
-    async add(): Promise<string> {
-        if (this.name === '') throw new ValidationError('Coupon name cannot be empty');
-        if (this.value <= 0 || this.value > 100)
-            throw new ValidationError('The coupon value must be between 1 and 100');
+    private valid() {
+        if (this.name.length <= 3 || this.name.length > 15)
+            throw new ValidationError('Coupon name must by greater than 3 characters and less than 15 characters');
+        if (this.value <= 0 || this.value > 100) throw new ValidationError('Coupon value must be between 1 and 100');
+    }
 
+    async add(): Promise<string> {
+        this.valid();
         const { insertedId } = await couponsCollection.insertOne({
             name: String(this.name),
             value: Number(this.value),
@@ -28,20 +31,17 @@ export class CouponRecord implements CouponEntity {
         return this.id;
     }
 
-    async update({ name, value }: NewCouponEntity): Promise<CouponEntity> {
-        const coupon = {
-            name: name ? String(name) : this.name,
-            value: value ? Number(value) : this.value,
-        };
-
-        await couponsCollection.replaceOne(
+    async update(): Promise<void> {
+        this.valid();
+        await couponsCollection.updateOne(
             { _id: new ObjectId(this.id) },
             {
-                ...coupon,
+                $set: {
+                    name: String(this.name),
+                    value: Number(this.value),
+                },
             }
         );
-
-        return new CouponRecord({ id: this.id, ...coupon });
     }
 
     static async delete(id: string): Promise<void> {
@@ -49,7 +49,7 @@ export class CouponRecord implements CouponEntity {
         await couponsCollection.deleteOne({ _id: new ObjectId(id) });
     }
 
-    static async getOne(id: string): Promise<CouponEntity> {
+    static async getOne(id: string): Promise<CouponRecord> {
         if (!ObjectId.isValid(id)) throw new ValidationError('Coupon id is invalid');
 
         const coupon = (await couponsCollection.findOne({ _id: new ObjectId(id) })) as CouponEntityDB;
@@ -61,8 +61,8 @@ export class CouponRecord implements CouponEntity {
         return new CouponRecord(coupon);
     }
 
-    static async getAll(): Promise<CouponEntity[]> {
-        const cursor = await couponsCollection.find().sort({ name: -1 });
+    static async getAll(): Promise<CouponEntityResponse[]> {
+        const cursor = await couponsCollection.find().sort({ name: 1 });
         const coupons = (await cursor.toArray()) as CouponEntityDB[];
 
         return coupons.length === 0

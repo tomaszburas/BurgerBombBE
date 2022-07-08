@@ -3,93 +3,37 @@ import { InfoRecord } from '../db/records/info-record';
 import { ValidationError } from '../middlewares/handle-error';
 
 export class InfoController {
-    static async add(req: Request, res: Response) {
+    static async save(req: Request, res: Response) {
         const { street, number, zipCode, city, phone, email, monThu, friSat, sun } = req.body;
 
-        const info = new InfoRecord({
-            street,
-            number,
-            zipCode,
-            city,
-            phone,
-            email,
-            monThu: {
-                from: monThu.from,
-                to: monThu.to,
-            },
-            friSat: {
-                from: friSat.from,
-                to: friSat.to,
-            },
-            sun: {
-                from: sun.from,
-                to: sun.to,
-            },
-        });
-
-        await info.add();
-
-        res.status(201).json({
-            success: true,
-            message: 'Information added successfully',
-        });
-    }
-
-    static async update(req: Request, res: Response) {
-        const id = req.params.id;
-        if (!id) throw new ValidationError('Incorrect info id');
-
         const info = await InfoRecord.get();
+        if (info === null) throw new ValidationError('There is no data in the database');
 
-        const newInfo = {
-            street: req.body.street ? req.body.street : '',
-            number: req.body.number ? req.body.number : '',
-            zipCode: req.body.zipCode ? req.body.zipCode : '',
-            city: req.body.city ? req.body.city : '',
-            phone: req.body.phone ? req.body.phone : '',
-            email: req.body.email ? req.body.email : '',
-            monThu: {
-                from: req.body.monThu.from ? req.body.monThu.from : '',
-                to: req.body.monThu.to ? req.body.monThu.to : '',
-            },
-            friSat: {
-                from: req.body.friSat.from ? req.body.friSat.from : '',
-                to: req.body.friSat.to ? req.body.friSat.to : '',
-            },
-            sun: {
-                from: req.body.sun.from ? req.body.sun.from : '',
-                to: req.body.sun.to ? req.body.sun.to : '',
-            },
+        info.street = street;
+        info.number = number;
+        info.zipCode = zipCode;
+        info.city = city;
+        info.phone = phone;
+        info.email = email;
+        info.monThu = {
+            from: monThu.from,
+            to: monThu.to,
+        };
+        info.friSat = {
+            from: friSat.from,
+            to: friSat.to,
+        };
+        info.sun = {
+            from: sun.from,
+            to: sun.to,
         };
 
-        const newInfoEntity = new InfoRecord({
-            id,
-            street: info.street,
-            number: info.number,
-            zipCode: info.zipCode,
-            city: info.city,
-            phone: info.phone,
-            email: info.email,
-            monThu: {
-                from: info.monThu.from,
-                to: info.monThu.to,
-            },
-            friSat: {
-                from: info.friSat.from,
-                to: info.friSat.to,
-            },
-            sun: {
-                from: info.sun.from,
-                to: info.sun.to,
-            },
-        });
-
-        const infoResponse = await newInfoEntity.update(newInfo);
+        await info.save();
 
         res.status(200).json({
             success: true,
             message: 'Info updated successfully',
-            info: infoResponse,
+            info,
         });
     }
 

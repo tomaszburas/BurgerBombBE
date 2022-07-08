@@ -22,27 +22,19 @@ export class CouponController {
 
     static async update(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidationError('Incorrect coupon id');
+        const { name, value } = req.body;
 
         const coupon = await CouponRecord.getOne(id);
 
-        const newCoupon = {
-            name: req.body.name ? req.body.name : '',
-            value: req.body.value ? req.body.value : 0,
-        };
+        coupon.name = name;
+        coupon.value = value;
 
-        const newCouponEntity = new CouponRecord({
-            id,
-            name: coupon.name,
-            value: coupon.value,
-        });
-
-        const couponResponse = await newCouponEntity.update(newCoupon);
+        await coupon.update();
 
         res.status(200).json({
             success: true,
             message: 'Coupon updated successfully',
-            coupon: couponResponse,
+            coupon,
         });
     }
 

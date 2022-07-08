@@ -14,6 +14,7 @@ import { CouponRouter } from './routes/coupon-router';
 
 import './middlewares/passport';
 import { InfoRouter } from './routes/info-router';
+import { BotdRouter } from './routes/botd-router';
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use('/api/admin', AdminRouter);
 app.use('/api/order', OrderRouter);
 app.use('/api/coupon', CouponRouter);
 app.use('/api/info', InfoRouter);
+app.use('/api/botd', BotdRouter);
 
 app.use(handleError);
 

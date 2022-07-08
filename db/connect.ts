@@ -11,3 +11,4 @@ export const informationsCollection = db.collection('informations');
 export const ordersCollection = db.collection('orders');
 export const usersCollection = db.collection('users');
 export const couponsCollection = db.collection('coupons');
+export const botdCollection = db.collection('botd');

@@ -20,7 +20,7 @@ export class AdminRecord implements AdminEntity {
     }
 
     async create(): Promise<string> {
-        if (!validationEmail(this.email)) throw new ValidationError('Incorrect email.');
+        if (!validationEmail(this.email)) throw new ValidationError('Incorrect email');
         if (!validationPassword(this.password))
             throw new ValidationError(
                 'Password must contain min. 5 characters, one digit and one upper case character'
@@ -39,7 +39,7 @@ export class AdminRecord implements AdminEntity {
     }
 
     async update(password: string): Promise<void> {
-        if (!validationEmail(this.email)) throw new ValidationError('Incorrect email.');
+        if (!validationEmail(this.email)) throw new ValidationError('Incorrect email');
 
         if (password.length > 0) {
             if (!validationPassword(password))
@@ -54,17 +54,16 @@ export class AdminRecord implements AdminEntity {
             { _id: new ObjectId(this.id) },
             {
                 $set: {
-                    email: this.email,
-                    password: this.password,
-                    role: this.role,
+                    email: String(this.email),
+                    password: String(this.password),
+                    role: String(this.role),
                 },
             }
         );
     }
 
     static async delete(id: string): Promise<void> {
-        if (!ObjectId.isValid(id)) throw new ValidationError('User id is invalid.');
-
+        if (!ObjectId.isValid(id)) throw new ValidationError('User id is invalid');
         await usersCollection.deleteOne({ _id: new ObjectId(id) });
     }
 

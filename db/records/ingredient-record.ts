@@ -1,4 +1,10 @@
-import { IngredientEntity, IngredientEntityDB, NewIngredientEntity } from '../../types';
+import {
+    BurgerIngredient,
+    IngredientEntity,
+    IngredientEntityDB,
+    IngredientEntityResponse,
+    NewIngredientEntity,
+} from '../../types';
 import { ObjectId } from 'mongodb';
 import { ingredientsCollection } from '../connect';
 import { ValidationError } from '../../middlewares/handle-error';
@@ -14,9 +20,17 @@ export class IngredientRecord implements IngredientEntity {
         this.price = obj.price ? Number(obj.price) : 0;
     }
 
-    async add(): Promise<string> {
-        if (!this.name) throw new ValidationError('The name of the ingredient is missing');
+    private valid() {
+        if (this.name.length < 3 || this.name.length > 15) {
+            throw new ValidationError('Ingredient name must be more than 3 letters and less than 15 characters');
+        }
+        if (this.price <= 0) {
+            throw new ValidationError('Ingredient price must be greater than 0');
+        }
+    }
 
+    async add(): Promise<string> {
+        this.valid();
         const { insertedId } = await ingredientsCollection.insertOne({
             name: String(this.name.toLowerCase()),
             price: Number(this.price),
@@ -32,23 +46,18 @@ export class IngredientRecord implements IngredientEntity {
         await ingredientsCollection.deleteOne({ _id: new ObjectId(id) });
     }
 
-    async update({ name, price }: NewIngredientEntity): Promise<IngredientEntity> {
-        const ingredient = {
-            name: name ? String(name.toLowerCase()) : this.name,
-            price: price ? Number(price) : this.price,
-        };
-
-        await ingredientsCollection.replaceOne(
+    async update(): Promise<void> {
+        this.valid();
+        await ingredientsCollection.updateOne(
             { _id: new ObjectId(this.id) },
             {
-                ...ingredient,
+                name: String(this.name.toLowerCase()),
+                price: Number(this.price),
             }
         );
-
-        return new IngredientRecord({ id: this.id, ...ingredient });
     }
 
-    static async getOne(id: string): Promise<IngredientEntity> {
+    static async getOne(id: string): Promise<IngredientRecord> {
         if (!ObjectId.isValid(id)) {
             throw new ValidationError('Ingredient id is invalid');
         }
@@ -64,7 +73,7 @@ export class IngredientRecord implements IngredientEntity {
         return new IngredientRecord(item);
     }
 
-    static async getAll(): Promise<IngredientEntity[]> {
+    static async getAll(): Promise<IngredientEntityResponse[]> {
         const cursor = await ingredientsCollection.find().sort({ name: 1 });
         const ingredients = await cursor.toArray();
 
@@ -77,12 +86,10 @@ export class IngredientRecord implements IngredientEntity {
               }));
     }
 
-    static async getNames(arr: string[]): Promise<string[]> {
-        return (await this.getAll()).map((e) => {
-            const check = arr.findIndex((id: string) => id === e.id);
-            if (check >= 0) {
-                return e.name;
-            }
-        });
+    static async getForResponse(ingredients: string[]): Promise<BurgerIngredient[]> {
+        return (await Promise.all(ingredients.map((id: string) => IngredientRecord.getOne(id)))).map((ingredient) => ({
+            name: ingredient.name,
+            id: ingredient.id,
+        }));
     }
 }
