@@ -17,7 +17,7 @@ export class BotdRecord implements BotdEntity {
 
         if (!botd) {
             const { insertedId } = await botdCollection.insertOne({
-                burger: null,
+                burger: false,
             });
 
             botd = (await botdCollection.findOne({ _id: insertedId })) as BotdEntityDB;
@@ -37,5 +37,23 @@ export class BotdRecord implements BotdEntity {
                 },
             }
         );
+    }
+
+    static async delete(): Promise<void> {
+        const burgers = await BurgerRecord.getAll();
+
+        if (burgers.length === 0) {
+            const { id } = await this.get();
+            await botdCollection.findOneAndDelete({ _id: new ObjectId(id) });
+        }
+    }
+
+    static async updateBurger(burgers: BurgerRecord[]): Promise<void> {
+        const botd = await this.get();
+
+        if (botd.burger && burgers.length > 0) {
+            botd.burger = burgers.find((burger) => botd.burger.id === burger.id);
+            await botd.save();
+        }
     }
 }

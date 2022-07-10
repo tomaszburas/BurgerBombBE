@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { ValidationError } from '../middlewares/handle-error';
 import { IngredientRecord } from '../db/records/ingredient-record';
 import { BurgerRecord } from '../db/records/burger-record';
+import { round } from '../utils/round';
 
 export class IngredientController {
     static async getAll(req: Request, res: Response) {
@@ -15,8 +15,6 @@ export class IngredientController {
 
     static async getOne(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidationError('Incorrect ingredient id');
-
         const ingredient = await IngredientRecord.getOne(id);
 
         res.status(200).json({
@@ -43,7 +41,7 @@ export class IngredientController {
         const ingredient = await IngredientRecord.getOne(id);
 
         ingredient.name = name;
-        ingredient.price = price;
+        ingredient.price = round(price);
 
         await ingredient.update();
 
@@ -59,10 +57,9 @@ export class IngredientController {
 
     static async delete(req: Request, res: Response) {
         const id = req.params.id;
-        if (!id) throw new ValidationError('Incorrect ingredient id');
 
-        await IngredientRecord.delete(id);
         const burgers = await BurgerRecord.deleteIngredient(id);
+        await IngredientRecord.delete(id);
 
         res.status(200).json({
             success: true,

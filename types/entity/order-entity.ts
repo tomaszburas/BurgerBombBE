@@ -1,4 +1,5 @@
-import { Document, ObjectId, WithId } from 'mongodb';
+import { ObjectId } from 'mongodb';
+import { BasketEntity } from './basket-entity';
 
 export enum OrderStatus {
     NEW = 'new',
@@ -16,27 +17,38 @@ export interface OrderEntity {
     client: {
         firstName: string;
         lastName: string;
-        address: {
-            street: string;
-            number: string;
-            zipCode: string;
-            city: string;
-        };
+        street: string;
+        number: string;
+        zipCode: string;
+        city: string;
         phone: string;
         email: string;
+        accRules: boolean;
     };
-    order: {
-        burger: string;
-        extraIngredients: string[];
-        price: number;
-        coupon: string;
-        payment: {
-            method: PaymentMethod;
-        };
-    };
+    order: BasketEntity[];
+    coupon: string | null;
+    paymentMethod: PaymentMethod;
     status: OrderStatus;
 }
 
 export interface NewOrderEntity extends Omit<OrderEntity, 'id'> {
     id?: string;
+}
+
+export interface OrderEntityDB extends Omit<OrderEntity, 'id'> {
+    _id: ObjectId;
+    id?: string;
+}
+
+export interface OrderFormEntity {
+    firstName: string;
+    lastName: string;
+    street: string;
+    number: string;
+    zipCode: string;
+    city: string;
+    phone: string;
+    email: string;
+    paymentMethod: string;
+    accRules: boolean;
 }

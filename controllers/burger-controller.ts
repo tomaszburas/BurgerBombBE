@@ -4,6 +4,8 @@ import { BurgerRecord } from '../db/records/burger-record';
 import { ValidationError } from '../middlewares/handle-error';
 import { IngredientRecord } from '../db/records/ingredient-record';
 import path from 'path';
+import { BotdRecord } from '../db/records/botd-record';
+import { round } from '../utils/round';
 
 export class BurgerController {
     static async getAll(req: Request, res: Response) {
@@ -33,7 +35,7 @@ export class BurgerController {
 
         const burger = new BurgerRecord({
             name: name.toLowerCase(),
-            price: Number(price),
+            price: Number(round(price)),
             img: filename,
             ingredients: await IngredientRecord.getForResponse(JSON.parse(ingredients)),
             active: JSON.parse(active),
@@ -58,12 +60,13 @@ export class BurgerController {
         }
 
         burger.name = name.toLowerCase();
-        burger.price = Number(price);
+        burger.price = Number(round(price));
         burger.ingredients = await IngredientRecord.getForResponse(JSON.parse(ingredients));
         burger.active = JSON.parse(active);
         burger.img = req.file ? req.file.filename : burger.img;
 
         await burger.update();
+        await BotdRecord.updateBurger([burger]);
 
         res.status(200).json({
             success: true,
@@ -74,9 +77,12 @@ export class BurgerController {
 
     static async delete(req: Request, res: Response) {
         const id = req.params.id;
+
         const { img } = await BurgerRecord.getOne(id);
         await BurgerRecord.delete(id);
         fs.unlink(path.join(__dirname, '../public', 'images', img));
+
+        await BotdRecord.delete();
 
         res.status(200).json({
             success: true,

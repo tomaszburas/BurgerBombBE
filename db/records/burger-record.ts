@@ -5,6 +5,8 @@ import { ValidationError } from '../../middlewares/handle-error';
 import { saveBurgers } from '../../utils/save-burgers';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { BotdRecord } from './botd-record';
+import { round } from '../../utils/round';
 
 export class BurgerRecord implements BurgerEntity {
     id: string;
@@ -18,7 +20,7 @@ export class BurgerRecord implements BurgerEntity {
         this.id = obj.id;
         this.name = obj.name;
         this.ingredients = obj.ingredients;
-        this.price = obj.price;
+        this.price = round(obj.price);
         this.active = obj.active;
         this.img = obj.img;
     }
@@ -89,6 +91,7 @@ export class BurgerRecord implements BurgerEntity {
         });
 
         const res = await saveBurgers(burgersUpdated);
+        await BotdRecord.updateBurger(burgersUpdated);
 
         return res.length === 0 ? [] : burgersUpdated.map((burger) => new BurgerRecord(burger));
     }
@@ -112,6 +115,7 @@ export class BurgerRecord implements BurgerEntity {
         }) as BurgerRecord[];
 
         const res = await saveBurgers(burgersUpdated);
+        await BotdRecord.updateBurger(burgersUpdated);
 
         return res.length === 0 ? [] : burgersUpdated.map((burger) => new BurgerRecord(burger));
     }

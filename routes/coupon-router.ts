@@ -8,4 +8,5 @@ CouponRouter.post('/', authenticateJwt, CouponController.add)
     .delete('/:id', authenticateJwt, CouponController.delete)
     .put('/:id', authenticateJwt, CouponController.update)
     .get('/', authenticateJwt, CouponController.getAll)
-    .get('/:id', CouponController.getOne);
+    .get('/:id', CouponController.getOne)
+    .get('/code/:name', CouponController.getByName);

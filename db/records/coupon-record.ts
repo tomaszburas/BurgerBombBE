@@ -73,4 +73,14 @@ export class CouponRecord implements CouponEntity {
                   value: coupon.value,
               }));
     }
+
+    static async getByName(name: string): Promise<CouponRecord> {
+        const coupon = (await couponsCollection.findOne({ name })) as CouponEntityDB;
+
+        if (!coupon) throw new ValidationError('Coupon does not exist');
+
+        coupon.id = coupon._id.toString();
+
+        return new CouponRecord(coupon);
+    }
 }

@@ -8,6 +8,7 @@ import {
 import { ObjectId } from 'mongodb';
 import { ingredientsCollection } from '../connect';
 import { ValidationError } from '../../middlewares/handle-error';
+import { round } from '../../utils/round';
 
 export class IngredientRecord implements IngredientEntity {
     id: string;
@@ -17,11 +18,11 @@ export class IngredientRecord implements IngredientEntity {
     constructor(obj: NewIngredientEntity) {
         this.id = obj.id;
         this.name = obj.name;
-        this.price = obj.price ? Number(obj.price) : 0;
+        this.price = obj.price ? round(obj.price) : 0;
     }
 
     private valid() {
-        if (this.name.length < 3 || this.name.length > 15) {
+        if (this.name.length < 3 || this.name.length > 30) {
             throw new ValidationError('Ingredient name must be more than 3 letters and less than 15 characters');
         }
         if (this.price <= 0) {
@@ -48,11 +49,13 @@ export class IngredientRecord implements IngredientEntity {
 
     async update(): Promise<void> {
         this.valid();
-        await ingredientsCollection.updateOne(
+        const a = await ingredientsCollection.updateOne(
             { _id: new ObjectId(this.id) },
             {
-                name: String(this.name.toLowerCase()),
-                price: Number(this.price),
+                $set: {
+                    name: String(this.name.toLowerCase()),
+                    price: Number(this.price),
+                },
             }
         );
     }

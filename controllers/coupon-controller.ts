@@ -71,4 +71,13 @@ export class CouponController {
             coupons,
         });
     }
+
+    static async getByName(req: Request, res: Response) {
+        const coupon = await CouponRecord.getByName(req.params.name);
+
+        res.status(200).json({
+            success: true,
+            coupon,
+        });
+    }
 }

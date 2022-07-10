@@ -4,4 +4,4 @@ import { authenticateJwt } from '../middlewares/authenticate-jwt';
 
 export const InfoRouter = Router();
 
-InfoRouter.get('/', authenticateJwt, InfoController.get).put('/', authenticateJwt, InfoController.save);
+InfoRouter.get('/', InfoController.get).put('/', authenticateJwt, InfoController.save);

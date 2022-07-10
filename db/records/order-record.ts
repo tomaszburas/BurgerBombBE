@@ -1,31 +1,33 @@
-import { OrderEntity, OrderStatus, NewOrderEntity, PaymentMethod } from '../../types';
+import {
+    OrderEntity,
+    OrderStatus,
+    NewOrderEntity,
+    PaymentMethod,
+    BasketEntity,
+    OrderEntityDB,
+    CouponEntityDB,
+} from '../../types';
 import { ObjectId } from 'mongodb';
 import { ordersCollection } from '../connect';
 import { ValidationError } from '../../middlewares/handle-error';
+import { validationEmail } from '../../utils/validation-email';
 
 export class OrderRecord implements OrderEntity {
     id: string;
     client: {
         firstName: string;
         lastName: string;
-        address: {
-            street: string;
-            number: string;
-            zipCode: string;
-            city: string;
-        };
+        street: string;
+        number: string;
+        zipCode: string;
+        city: string;
         phone: string;
         email: string;
+        accRules: boolean;
     };
-    order: {
-        burger: string;
-        extraIngredients: string[];
-        price: number;
-        coupon: string | null;
-        payment: {
-            method: PaymentMethod;
-        };
-    };
+    order: BasketEntity[];
+    coupon: string | null;
+    paymentMethod: PaymentMethod;
     status: OrderStatus;
 
     constructor(obj: NewOrderEntity) {
@@ -33,25 +35,48 @@ export class OrderRecord implements OrderEntity {
         this.client = obj.client;
         this.order = obj.order;
         this.status = obj.status || OrderStatus.NEW;
+        this.coupon = obj.coupon || null;
+        this.paymentMethod = obj.paymentMethod;
     }
 
-    async add(): Promise<null | string> {
+    private valid() {
+        if (this.client.firstName.length <= 3 || this.client.firstName.length > 15)
+            throw new ValidationError('First name must by greater than 3 characters and less than 15 characters');
+        if (this.client.lastName.length <= 3 || this.client.lastName.length > 15)
+            throw new ValidationError('Last name must by greater than 3 characters and less than 15 characters');
+        if (this.client.street.length <= 3 || this.client.street.length > 15)
+            throw new ValidationError('Street name must by greater than 3 characters and less than 15 characters');
+        if (this.client.number.length <= 0 || this.client.number.length > 10)
+            throw new ValidationError('Number must by greater than 0 characters and less than 10 characters');
+        if (this.client.zipCode.length <= 3 || this.client.zipCode.length > 10)
+            throw new ValidationError('Zip Code by greater than 3 characters and less than 15 characters');
+        if (this.client.city.length <= 3 || this.client.city.length > 20)
+            throw new ValidationError('City name must by greater than 3 characters and less than 20 characters');
+        if (this.client.phone.length <= 5 || this.client.phone.length > 15)
+            throw new ValidationError('Phone must by greater than 5 characters and less than 15 characters');
+        if (!validationEmail(this.client.email)) throw new ValidationError('Incorrect email');
+        if (!this.client.accRules) throw new ValidationError('Please accept the regulations');
+        if (this.order.length === 0) throw new ValidationError('Basket is empty');
+    }
+
+    async add(): Promise<string> {
+        this.valid();
         const { insertedId } = await ordersCollection.insertOne({
             client: this.client,
             order: this.order,
+            coupon: this.coupon,
             status: this.status,
+            paymentMethod: this.paymentMethod,
         });
 
-        if (!insertedId) return null;
         this.id = insertedId.toString();
         return this.id;
     }
 
-    static async updateStatus(id: string, status: OrderEntity['status']): Promise<void> {
-        if (!ObjectId.isValid(id)) throw new ValidationError('Order id is invalid.');
-
+    static async updateStatus(id: string, status: string): Promise<void> {
+        if (!ObjectId.isValid(id)) throw new ValidationError('Order id is invalid');
         await ordersCollection.updateOne(
-            { _id: id },
+            { _id: new ObjectId(id) },
             {
                 $set: {
                     status,
@@ -61,30 +86,41 @@ export class OrderRecord implements OrderEntity {
     }
 
     static async delete(id: string): Promise<void> {
-        if (!ObjectId.isValid(id)) throw new ValidationError('Order id is invalid.');
+        if (!ObjectId.isValid(id)) throw new ValidationError('Order id is invalid');
         await ordersCollection.deleteOne({ _id: new ObjectId(id) });
     }
 
     static async getOne(id: string): Promise<OrderEntity> {
         if (!ObjectId.isValid(id)) {
-            throw new ValidationError('Order id is invalid.');
+            throw new ValidationError('Order id is invalid');
         }
 
         const item = (await ordersCollection.findOne({
             _id: new ObjectId(id),
-        })) as any;
+        })) as OrderEntityDB;
 
-        if (!item) throw new ValidationError('In database dont have ingredient with given id.');
+        if (!item) throw new ValidationError('In database dont have order with given id');
+
+        item.id = item._id.toString();
 
         return new OrderRecord(item);
     }
 
     static async getAll(): Promise<OrderEntity[]> {
-        const result = await ordersCollection.find();
-        const resultArray = (await result.toArray()) as any[];
+        const cursor = await ordersCollection.find();
+        const orders = (await cursor.toArray()) as OrderEntityDB[];
 
-        if (!resultArray.length) throw new ValidationError('Id database dont have any order.');
+        if (!orders.length) throw new ValidationError('Id database dont have any order.');
 
-        return resultArray;
+        return orders.length === 0
+            ? []
+            : orders.map((order: OrderEntityDB) => ({
+                  id: order._id.toString(),
+                  client: order.client,
+                  order: order.order,
+                  coupon: order.coupon,
+                  status: order.status,
+                  paymentMethod: order.paymentMethod,
+              }));
     }
 }
