@@ -66,7 +66,7 @@ export class BurgerController {
         burger.img = req.file ? req.file.filename : burger.img;
 
         await burger.update();
-        await BotdRecord.updateBurger([burger]);
+        await BotdRecord.updateBurger(burger);
 
         res.status(200).json({
             success: true,
@@ -82,7 +82,7 @@ export class BurgerController {
         await BurgerRecord.delete(id);
         fs.unlink(path.join(__dirname, '../public', 'images', img));
 
-        await BotdRecord.delete();
+        await BotdRecord.deleteBurger(id);
 
         res.status(200).json({
             success: true,

@@ -1,5 +1,5 @@
-import { InfoEntity, InfoEntityDB, NewInfoEntity } from '../../types';
-import { informationsCollection } from '../connect';
+import { InfoEntity, NewInfoEntity } from '../../types';
+import { infoCollection } from '../connect';
 import { ObjectId } from 'mongodb';
 import { ValidationError } from '../../middlewares/handle-error';
 import { validationEmail } from '../../utils/validation-email';
@@ -15,6 +15,7 @@ export class InfoRecord implements InfoEntity {
     monThu: { from: string; to: string };
     friSat: { from: string; to: string };
     sun: { from: string; to: string };
+    orderNumber: number;
 
     constructor(obj: NewInfoEntity) {
         this.id = obj.id;
@@ -27,6 +28,7 @@ export class InfoRecord implements InfoEntity {
         this.monThu = obj.monThu;
         this.friSat = obj.friSat;
         this.sun = obj.sun;
+        this.orderNumber = obj.orderNumber || 1;
     }
 
     private valid() {
@@ -45,7 +47,7 @@ export class InfoRecord implements InfoEntity {
 
     async save(): Promise<void> {
         this.valid();
-        await informationsCollection.updateOne(
+        await infoCollection.updateOne(
             { _id: new ObjectId(this.id) },
             {
                 $set: {
@@ -58,16 +60,17 @@ export class InfoRecord implements InfoEntity {
                     monThu: this.monThu,
                     friSat: this.friSat,
                     sun: this.sun,
+                    orderNumber: this.orderNumber,
                 },
             }
         );
     }
 
     static async get(): Promise<InfoRecord | null> {
-        let item = (await informationsCollection.findOne()) as InfoEntityDB;
+        let item = (await infoCollection.findOne()) as NewInfoEntity;
 
         if (!item) {
-            const { insertedId } = await informationsCollection.insertOne({
+            const { insertedId } = await infoCollection.insertOne({
                 street: 'null',
                 number: 'null',
                 zipCode: 'null',
@@ -86,13 +89,29 @@ export class InfoRecord implements InfoEntity {
                     from: 'null',
                     to: 'null',
                 },
+                orderNumber: 1,
             });
 
-            item = (await informationsCollection.findOne({ _id: insertedId })) as InfoEntityDB;
+            item = (await infoCollection.findOne({ _id: insertedId })) as NewInfoEntity;
             return new InfoRecord(item);
         }
 
         item.id = item._id.toString();
         return new InfoRecord(item);
+    }
+
+    static async getOrderNumberAndInc(): Promise<number> {
+        const item = await this.get();
+
+        await infoCollection.updateOne(
+            { _id: new ObjectId(item.id) },
+            {
+                $inc: {
+                    orderNumber: 1,
+                },
+            }
+        );
+
+        return item.orderNumber;
     }
 }

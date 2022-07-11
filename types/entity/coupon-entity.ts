@@ -7,12 +7,6 @@ export interface CouponEntity {
 }
 
 export interface NewCouponEntity extends Omit<CouponEntity, 'id'> {
+    _id?: ObjectId;
     id?: string;
 }
-
-export interface CouponEntityDB extends Omit<CouponEntity, 'id'> {
-    _id: ObjectId;
-    id?: string;
-}
-
-export interface CouponEntityResponse extends CouponEntity {}

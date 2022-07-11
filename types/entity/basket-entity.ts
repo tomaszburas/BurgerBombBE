@@ -1,4 +1,4 @@
-import { IngredientEntityResponse } from './ingredient-entity';
+import { IngredientEntity } from './ingredient-entity';
 
 export enum MeatPreparation {
     RARE = 'rare',
@@ -12,7 +12,7 @@ export interface BasketEntity {
     name: string;
     price: number;
     burgerQuantity: number;
-    extraIngredients: IngredientEntityResponse[];
+    extraIngredients: IngredientEntity[];
     totalValue: number;
     meatPreparation: MeatPreparation | null;
 }

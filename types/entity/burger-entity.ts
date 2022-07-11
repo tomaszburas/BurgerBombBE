@@ -11,15 +11,9 @@ export interface BurgerEntity {
 }
 
 export interface NewBurgerEntity extends Omit<BurgerEntity, 'id'> {
+    _id?: ObjectId;
     id?: string;
 }
-
-export interface BurgerEntityDB extends Omit<BurgerEntity, 'id'> {
-    _id: ObjectId;
-    id?: string;
-}
-
-export interface BurgerEntityResponse extends BurgerEntity {}
 
 export interface BurgerForm {
     name: string;

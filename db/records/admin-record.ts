@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
 import { ValidationError } from '../../middlewares/handle-error';
 import { validationPassword } from '../../utils/validation-password';
-import { AdminEntity, AdminEntityDB, AdminEntityResponse, NewAdminEntity } from '../../types';
+import { AdminEntity, AdminEntityResponse, NewAdminEntity } from '../../types';
 import { usersCollection } from '../connect';
 import { validationEmail } from '../../utils/validation-email';
 
@@ -72,7 +72,7 @@ export class AdminRecord implements AdminEntity {
 
         const user = (await usersCollection.findOne({
             _id: new ObjectId(id),
-        })) as AdminEntityDB;
+        })) as NewAdminEntity;
 
         if (!user) throw new ValidationError('In database dont have user with given id');
 
@@ -84,7 +84,7 @@ export class AdminRecord implements AdminEntity {
     static async getByEmail(email: string): Promise<AdminRecord | null> {
         const user = (await usersCollection.findOne({
             email: String(email),
-        })) as AdminEntityDB;
+        })) as NewAdminEntity;
 
         if (!user) return null;
 
@@ -108,7 +108,7 @@ export class AdminRecord implements AdminEntity {
 
         return users.length === 0
             ? []
-            : users.map((user: AdminEntityDB) => ({
+            : users.map((user) => ({
                   id: user._id.toString(),
                   email: user.email,
                   role: user.role,

@@ -73,7 +73,7 @@ export class AdminController {
 
         await AdminRecord.delete(req.params.id);
 
-        res.status(200).json({ success: true, message: 'User removed', id: req.params.id });
+        res.status(200).json({ success: true, message: 'User removed' });
     }
 
     static async getAll(req: Request, res: Response) {

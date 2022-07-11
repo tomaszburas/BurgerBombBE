@@ -13,11 +13,7 @@ export interface AdminEntity {
 }
 
 export interface NewAdminEntity extends Omit<AdminEntity, 'id'> {
-    id?: string;
-}
-
-export interface AdminEntityDB extends Omit<AdminEntity, 'id'> {
-    _id: ObjectId;
+    _id?: ObjectId;
     id?: string;
 }
 

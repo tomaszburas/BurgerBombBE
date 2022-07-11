@@ -1,4 +1,4 @@
-import { BotdEntity, BotdEntityDB, NewBotdEntity } from '../../types/entity/botd-entity';
+import { BotdEntity, NewBotdEntity } from '../../types/entity/botd-entity';
 import { BurgerRecord } from './burger-record';
 import { ObjectId } from 'mongodb';
 import { botdCollection } from '../connect';
@@ -13,14 +13,14 @@ export class BotdRecord implements BotdEntity {
     }
 
     static async get(): Promise<BotdRecord> {
-        let botd = (await botdCollection.findOne()) as BotdEntityDB;
+        let botd = (await botdCollection.findOne()) as NewBotdEntity;
 
         if (!botd) {
             const { insertedId } = await botdCollection.insertOne({
                 burger: false,
             });
 
-            botd = (await botdCollection.findOne({ _id: insertedId })) as BotdEntityDB;
+            botd = (await botdCollection.findOne({ _id: insertedId })) as NewBotdEntity;
             return new BotdRecord(botd);
         }
 
@@ -39,20 +39,20 @@ export class BotdRecord implements BotdEntity {
         );
     }
 
-    static async delete(): Promise<void> {
-        const burgers = await BurgerRecord.getAll();
+    static async updateBurger(burger: BurgerRecord): Promise<void> {
+        const botd = await this.get();
 
-        if (burgers.length === 0) {
-            const { id } = await this.get();
-            await botdCollection.findOneAndDelete({ _id: new ObjectId(id) });
+        if (botd.burger && botd.burger.id === burger.id) {
+            botd.burger = burger;
+            await botd.save();
         }
     }
 
-    static async updateBurger(burgers: BurgerRecord[]): Promise<void> {
+    static async deleteBurger(id: string): Promise<void> {
         const botd = await this.get();
 
-        if (botd.burger && burgers.length > 0) {
-            botd.burger = burgers.find((burger) => botd.burger.id === burger.id);
+        if (botd.burger && botd.burger.id === id) {
+            botd.burger = null;
             await botd.save();
         }
     }

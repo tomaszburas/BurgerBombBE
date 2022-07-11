@@ -1,10 +1,4 @@
-import {
-    BurgerIngredient,
-    IngredientEntity,
-    IngredientEntityDB,
-    IngredientEntityResponse,
-    NewIngredientEntity,
-} from '../../types';
+import { BurgerIngredient, IngredientEntity, NewIngredientEntity } from '../../types';
 import { ObjectId } from 'mongodb';
 import { ingredientsCollection } from '../connect';
 import { ValidationError } from '../../middlewares/handle-error';
@@ -49,7 +43,7 @@ export class IngredientRecord implements IngredientEntity {
 
     async update(): Promise<void> {
         this.valid();
-        const a = await ingredientsCollection.updateOne(
+        await ingredientsCollection.updateOne(
             { _id: new ObjectId(this.id) },
             {
                 $set: {
@@ -67,7 +61,7 @@ export class IngredientRecord implements IngredientEntity {
 
         const item = (await ingredientsCollection.findOne({
             _id: new ObjectId(id),
-        })) as IngredientEntityDB;
+        })) as NewIngredientEntity;
 
         if (!item) throw new ValidationError('In database dont have ingredient with given id');
 
@@ -76,13 +70,13 @@ export class IngredientRecord implements IngredientEntity {
         return new IngredientRecord(item);
     }
 
-    static async getAll(): Promise<IngredientEntityResponse[]> {
+    static async getAll(): Promise<IngredientEntity[]> {
         const cursor = await ingredientsCollection.find().sort({ name: 1 });
         const ingredients = await cursor.toArray();
 
         return ingredients.length === 0
             ? []
-            : ingredients.map((ingredient: IngredientEntityDB) => ({
+            : ingredients.map((ingredient) => ({
                   id: ingredient._id.toString(),
                   name: ingredient.name,
                   price: ingredient.price,

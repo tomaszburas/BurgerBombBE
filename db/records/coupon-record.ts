@@ -1,4 +1,4 @@
-import { CouponEntity, CouponEntityDB, CouponEntityResponse, NewCouponEntity } from '../../types';
+import { CouponEntity, NewCouponEntity } from '../../types';
 import { ObjectId } from 'mongodb';
 import { couponsCollection } from '../connect';
 import { ValidationError } from '../../middlewares/handle-error';
@@ -52,7 +52,7 @@ export class CouponRecord implements CouponEntity {
     static async getOne(id: string): Promise<CouponRecord> {
         if (!ObjectId.isValid(id)) throw new ValidationError('Coupon id is invalid');
 
-        const coupon = (await couponsCollection.findOne({ _id: new ObjectId(id) })) as CouponEntityDB;
+        const coupon = (await couponsCollection.findOne({ _id: new ObjectId(id) })) as NewCouponEntity;
 
         if (!coupon) throw new ValidationError('In database dont have coupon with given id');
 
@@ -61,13 +61,13 @@ export class CouponRecord implements CouponEntity {
         return new CouponRecord(coupon);
     }
 
-    static async getAll(): Promise<CouponEntityResponse[]> {
+    static async getAll(): Promise<CouponEntity[]> {
         const cursor = await couponsCollection.find().sort({ name: 1 });
-        const coupons = (await cursor.toArray()) as CouponEntityDB[];
+        const coupons = (await cursor.toArray()) as NewCouponEntity[];
 
         return coupons.length === 0
             ? []
-            : coupons.map((coupon: CouponEntityDB) => ({
+            : coupons.map((coupon: NewCouponEntity) => ({
                   id: coupon._id.toString(),
                   name: coupon.name,
                   value: coupon.value,
@@ -75,7 +75,7 @@ export class CouponRecord implements CouponEntity {
     }
 
     static async getByName(name: string): Promise<CouponRecord> {
-        const coupon = (await couponsCollection.findOne({ name })) as CouponEntityDB;
+        const coupon = (await couponsCollection.findOne({ name })) as NewCouponEntity;
 
         if (!coupon) throw new ValidationError('Coupon does not exist');
 

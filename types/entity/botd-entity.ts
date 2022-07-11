@@ -7,10 +7,6 @@ export interface BotdEntity {
 }
 
 export interface NewBotdEntity extends Omit<BotdEntity, 'id'> {
-    id?: string;
-}
-
-export interface BotdEntityDB extends Omit<BotdEntity, 'id'> {
-    _id: ObjectId;
+    _id?: ObjectId;
     id?: string;
 }

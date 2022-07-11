@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { BasketEntity } from './basket-entity';
+import { CouponEntity } from './coupon-entity';
 
 export enum OrderStatus {
     NEW = 'new',
@@ -26,17 +27,16 @@ export interface OrderEntity {
         accRules: boolean;
     };
     order: BasketEntity[];
-    coupon: string | null;
+    coupon: CouponEntity | null;
     paymentMethod: PaymentMethod;
     status: OrderStatus;
+    value: number;
+    orderNumber: number;
+    date: Date;
 }
 
 export interface NewOrderEntity extends Omit<OrderEntity, 'id'> {
-    id?: string;
-}
-
-export interface OrderEntityDB extends Omit<OrderEntity, 'id'> {
-    _id: ObjectId;
+    _id?: ObjectId;
     id?: string;
 }
 

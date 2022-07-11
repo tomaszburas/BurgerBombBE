@@ -20,15 +20,10 @@ export interface InfoEntity {
         from: string;
         to: string;
     };
+    orderNumber: number;
 }
 
 export interface NewInfoEntity extends Omit<InfoEntity, 'id'> {
+    _id?: ObjectId;
     id?: string;
 }
-
-export interface InfoEntityDB extends Omit<InfoEntity, 'id'> {
-    _id: ObjectId;
-    id?: string;
-}
-
-export interface InfoEntityResponse extends InfoEntity {}

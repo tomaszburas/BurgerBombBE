@@ -1,4 +1,4 @@
-import { BurgerEntity, BurgerEntityDB, BurgerIngredient, IngredientEntity, NewBurgerEntity } from '../../types';
+import { BurgerEntity, BurgerIngredient, IngredientEntity, NewBurgerEntity } from '../../types';
 import { burgersCollection } from '../connect';
 import { ObjectId } from 'mongodb';
 import { ValidationError } from '../../middlewares/handle-error';
@@ -125,7 +125,7 @@ export class BurgerRecord implements BurgerEntity {
 
         const item = (await burgersCollection.findOne({
             _id: new ObjectId(id),
-        })) as BurgerEntityDB;
+        })) as NewBurgerEntity;
 
         if (!item) throw new ValidationError('In database dont have burger with given id');
 
@@ -140,7 +140,7 @@ export class BurgerRecord implements BurgerEntity {
 
         return burgers.length === 0
             ? []
-            : burgers.map((burger: BurgerEntityDB) => ({
+            : burgers.map((burger: NewBurgerEntity) => ({
                   id: burger._id.toString(),
                   name: burger.name,
                   ingredients: burger.ingredients,

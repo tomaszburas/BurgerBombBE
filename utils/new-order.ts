@@ -1,10 +1,10 @@
-import { BasketEntity, IngredientEntity } from '../types';
+import { BasketEntity, CouponEntity, IngredientEntity } from '../types';
 import { BurgerRecord } from '../db/records/burger-record';
 import { IngredientRecord } from '../db/records/ingredient-record';
 import { round } from './round';
 import { CouponRecord } from '../db/records/coupon-record';
 
-export const orderValue = async (order: BasketEntity[], couponId: string): Promise<number> => {
+export const orderValue = async (order: BasketEntity[], coupon: CouponEntity): Promise<number> => {
     if (order.length === 0) return 0;
     let totalValue = 0;
 
@@ -13,7 +13,7 @@ export const orderValue = async (order: BasketEntity[], couponId: string): Promi
     const ingredientsPromises = order.map((burger) => {
         return burger.extraIngredients.map((ingredient) => IngredientRecord.getOne(ingredient.id));
     });
-    const ingredients: any = [];
+    const ingredients: any[] = [];
     for (const ing of ingredientsPromises) {
         ingredients.push(await Promise.all(ing));
     }
@@ -28,8 +28,8 @@ export const orderValue = async (order: BasketEntity[], couponId: string): Promi
         totalValue += round(burgerQuantity * (burgers[index].price + ingredientValue));
     });
 
-    if (couponId) {
-        const couponValue = (await CouponRecord.getOne(couponId)).value;
+    if (coupon) {
+        const couponValue = (await CouponRecord.getOne(coupon.id)).value;
         totalValue = round(totalValue * (1 - couponValue / 100));
     }
 

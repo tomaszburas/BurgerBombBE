@@ -1,36 +1,40 @@
 import { Request, Response } from 'express';
 import { OrderRecord } from '../db/records/order-record';
-import { CouponRecord } from '../db/records/coupon-record';
+import { OrderStatus } from '../types';
 import { orderValue } from '../utils/new-order';
+import { InfoRecord } from '../db/records/info-record';
+import { checkPermissions } from '../utils/check-permissions';
 
 export class OrderController {
     static async add(req: Request, res: Response) {
         const { client, order, coupon } = req.body;
 
-        const value = await orderValue(order, coupon.id);
+        const newOrder = new OrderRecord({
+            client: {
+                firstName: client.firstName,
+                lastName: client.lastName,
+                street: client.street,
+                number: client.number,
+                zipCode: client.zipCode,
+                city: client.city,
+                phone: client.phone,
+                email: client.email,
+                accRules: client.accRules,
+            },
+            order,
+            paymentMethod: client.paymentMethod,
+            coupon: coupon ? coupon : null,
+            status: OrderStatus.NEW,
+            value: await orderValue(order, coupon),
+            orderNumber: await InfoRecord.getOrderNumberAndInc(),
+            date: new Date(),
+        });
 
-        // const newOrder = new OrderRecord({
-        //     client: {
-        //         firstName: client.firstName,
-        //         lastName: client.lastName,
-        //         street: client.street,
-        //         number: client.number,
-        //         zipCode: client.zipCode,
-        //         city: client.city,
-        //         phone: client.phone,
-        //         email: client.email,
-        //         accRules: client.accRules,
-        //     },
-        //     order,
-        //     paymentMethod,
-        //     coupon: coupon ? coupon : null,
-        //     status: OrderStatus.NEW,
-        // });
-        //
-        // await newOrder.add();
+        await newOrder.add();
 
         res.status(201).json({
             success: true,
+            order: newOrder,
         });
     }
 
@@ -45,11 +49,13 @@ export class OrderController {
     }
 
     static async delete(req: Request, res: Response) {
+        checkPermissions(req.user.role);
         const id = req.params.id;
         await OrderRecord.delete(id);
 
         res.status(200).json({
             success: true,
+            message: 'Order removed',
         });
     }
 
@@ -64,7 +70,7 @@ export class OrderController {
     }
 
     static async getAll(req: Request, res: Response) {
-        const orders = await CouponRecord.getAll();
+        const orders = await OrderRecord.getAll();
 
         res.status(200).json({
             success: true,
