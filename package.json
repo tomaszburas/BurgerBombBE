@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "tsnd server.ts",
+    "start": "tsnd index.ts",
     "build": "tsc"
   },
   "keywords": [],
