@@ -20,12 +20,7 @@ const app = express();
 
 app.use(express.static('./public'));
 app.use(json());
-app.use(
-    cors({
-        origin: 'http://localhost:3000',
-        credentials: true,
-    })
-);
+app.use(cors());
 app.use(cookieParser());
 app.use(passport.initialize());
 
