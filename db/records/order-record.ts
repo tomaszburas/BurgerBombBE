@@ -112,8 +112,6 @@ export class OrderRecord implements OrderEntity {
         const cursor = await ordersCollection.find().sort({ orderNumber: -1 });
         const orders = (await cursor.toArray()) as NewOrderEntity[];
 
-        if (!orders.length) throw new ValidationError('Id database dont have any order.');
-
         return orders.length === 0
             ? []
             : orders.map((order: NewOrderEntity) => ({

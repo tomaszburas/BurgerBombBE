@@ -32,13 +32,13 @@ export class InfoRecord implements InfoEntity {
     }
 
     private valid() {
-        if (this.street.length <= 3 || this.street.length > 15)
-            throw new ValidationError('Street name must by greater than 3 characters and less than 15 characters');
+        if (this.street.length <= 3 || this.street.length > 30)
+            throw new ValidationError('Street name must by greater than 3 characters and less than 30 characters');
         if (this.number.length <= 0 || this.number.length > 10)
             throw new ValidationError('Number must by greater than 0 characters and less than 10 characters');
         if (this.zipCode.length <= 3 || this.zipCode.length > 10)
             throw new ValidationError('Zip Code by greater than 3 characters and less than 15 characters');
-        if (this.city.length <= 3 || this.city.length > 20)
+        if (this.city.length < 2 || this.city.length > 20)
             throw new ValidationError('City name must by greater than 3 characters and less than 20 characters');
         if (this.phone.length <= 5 || this.phone.length > 15)
             throw new ValidationError('Phone must by greater than 5 characters and less than 15 characters');
