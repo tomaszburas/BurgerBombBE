@@ -1,6 +1,7 @@
 import { MongoClient } from 'mongodb';
+import { DB_HOST, DB_NAME, DB_PASSWORD, DB_USER } from '../config';
 
-const client = new MongoClient('mongodb://localhost:27017');
+const client = new MongoClient(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_NAME}.${DB_HOST}`);
 
 client.connect();
 const db = client.db('burger_bomb');
