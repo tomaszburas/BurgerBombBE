@@ -39,11 +39,15 @@ export class BotdRecord implements BotdEntity {
         );
     }
 
-    static async updateBurger(burger: BurgerRecord): Promise<void> {
+    static async updateBurger(burgers: BurgerRecord[]): Promise<void> {
         const botd = await this.get();
 
-        if (botd.burger && botd.burger.id === burger.id) {
-            botd.burger = burger;
+        if (botd.burger) {
+            burgers.map((burger) => {
+                if (burger.id === botd.burger.id) {
+                    botd.burger = burger;
+                }
+            });
             await botd.save();
         }
     }

@@ -66,7 +66,7 @@ export class BurgerController {
         burger.img = req.file ? req.file.filename : burger.img;
 
         await burger.update();
-        await BotdRecord.updateBurger(burger);
+        await BotdRecord.updateBurger([burger]);
 
         res.status(200).json({
             success: true,
