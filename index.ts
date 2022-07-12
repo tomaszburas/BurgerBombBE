@@ -24,13 +24,14 @@ app.use(cors());
 app.use(cookieParser());
 app.use(passport.initialize());
 
-app.use('/api/burger', BurgerRouter);
-app.use('/api/ingredient', IngredientRouter);
-app.use('/api/admin', AdminRouter);
-app.use('/api/order', OrderRouter);
-app.use('/api/coupon', CouponRouter);
-app.use('/api/info', InfoRouter);
-app.use('/api/botd', BotdRouter);
+const URL = '/api/bb';
+app.use(`${URL}/burger`, BurgerRouter);
+app.use(`${URL}/ingredient`, IngredientRouter);
+app.use(`${URL}/admin`, AdminRouter);
+app.use(`${URL}/order`, OrderRouter);
+app.use(`${URL}/coupon`, CouponRouter);
+app.use(`${URL}/info`, InfoRouter);
+app.use(`${URL}/botd`, BotdRouter);
 
 app.use(handleError);
 
