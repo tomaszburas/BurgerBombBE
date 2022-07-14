@@ -11,14 +11,14 @@ export class OrderController {
 
         const newOrder = new OrderRecord({
             client: {
-                firstName: client.firstName,
-                lastName: client.lastName,
-                street: client.street,
-                number: client.number,
-                zipCode: client.zipCode,
-                city: client.city,
-                phone: client.phone,
-                email: client.email,
+                firstName: client.firstName.trim(),
+                lastName: client.lastName.trim(),
+                street: client.street.trim(),
+                number: client.number.trim(),
+                zipCode: client.zipCode.trim(),
+                city: client.city.trim(),
+                phone: client.phone.trim(),
+                email: client.email.trim(),
                 accRules: client.accRules,
             },
             order,
@@ -26,7 +26,7 @@ export class OrderController {
             coupon: coupon ? coupon : null,
             status: OrderStatus.NEW,
             value: await orderValue(order, coupon),
-            orderNumber: await InfoRecord.getOrderNumberAndInc(),
+            orderNumber: await InfoRecord.getOrderNumber(),
             date: new Date(),
         });
 

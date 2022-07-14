@@ -7,7 +7,7 @@ export class CouponController {
         const { name, value } = req.body;
 
         const coupon = new CouponRecord({
-            name: String(name),
+            name: String(name.trim()),
             value: Number(value),
         });
 
@@ -26,7 +26,7 @@ export class CouponController {
 
         const coupon = await CouponRecord.getOne(id);
 
-        coupon.name = name;
+        coupon.name = name.trim();
         coupon.value = value;
 
         await coupon.update();

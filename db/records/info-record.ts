@@ -100,9 +100,13 @@ export class InfoRecord implements InfoEntity {
         return new InfoRecord(item);
     }
 
-    static async getOrderNumberAndInc(): Promise<number> {
+    static async getOrderNumber(): Promise<number> {
         const item = await this.get();
+        return item.orderNumber;
+    }
 
+    static async incOrderNumber(): Promise<void> {
+        const item = await this.get();
         await infoCollection.updateOne(
             { _id: new ObjectId(item.id) },
             {
@@ -111,7 +115,5 @@ export class InfoRecord implements InfoEntity {
                 },
             }
         );
-
-        return item.orderNumber;
     }
 }

@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { ordersCollection } from '../connect';
 import { ValidationError } from '../../middlewares/handle-error';
 import { validationEmail } from '../../utils/validation-email';
+import { InfoRecord } from './info-record';
 
 export class OrderRecord implements OrderEntity {
     id: string;
@@ -71,6 +72,7 @@ export class OrderRecord implements OrderEntity {
             date: this.date,
         });
 
+        await InfoRecord.incOrderNumber();
         this.id = insertedId.toString();
         return this.id;
     }

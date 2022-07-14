@@ -31,12 +31,12 @@ export class BurgerController {
 
     static async add(req: Request, res: Response) {
         const { name, price, ingredients, active } = req.body;
-        const filename = req.file ? req.file.filename : null;
+        const fileName = req.file ? req.file.filename : null;
 
         const burger = new BurgerRecord({
-            name: name.toLowerCase(),
+            name: name.toLowerCase().trim(),
             price: Number(round(price)),
-            img: filename,
+            img: fileName,
             ingredients: await IngredientRecord.getForResponse(JSON.parse(ingredients)),
             active: JSON.parse(active),
         });
@@ -59,7 +59,7 @@ export class BurgerController {
             fs.unlink(path.join(__dirname, '../public', 'images', burger.img));
         }
 
-        burger.name = name.toLowerCase();
+        burger.name = name.toLowerCase().trim();
         burger.price = Number(round(price));
         burger.ingredients = await IngredientRecord.getForResponse(JSON.parse(ingredients));
         burger.active = JSON.parse(active);

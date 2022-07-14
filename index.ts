@@ -20,11 +20,16 @@ const app = express();
 
 app.use(express.static('./public'));
 app.use(json());
-app.use(cors());
+app.use(
+    cors({
+        origin: 'http://localhost:3000',
+        credentials: true,
+    })
+);
 app.use(cookieParser());
 app.use(passport.initialize());
 
-const URL = '/api/bb';
+const URL = '/api';
 app.use(`${URL}/burger`, BurgerRouter);
 app.use(`${URL}/ingredient`, IngredientRouter);
 app.use(`${URL}/admin`, AdminRouter);
