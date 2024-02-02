@@ -1,17 +1,17 @@
 {
-  "compilerOptions": {
-    "noImplicitAny": true,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "target": "ES6",
-    "downlevelIteration": true,
-    "lib": ["es6"],
-    "outDir": "./dist",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "moduleResolution": "node",
-    "module": "CommonJS",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
-  }
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "target": "ES6",
+        "downlevelIteration": true,
+        "lib": ["es6"],
+        "outDir": "./dist",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "moduleResolution": "node",
+        "module": "CommonJS",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true
+    }
 }
